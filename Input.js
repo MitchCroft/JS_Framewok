@@ -13,7 +13,7 @@
  *		Vec2.js
  *
  *		Version: 2.0
- *		Cleaned up comments and code layout
+ *		Added axis values. Cleaned up comments and code layout
  *
  *		Purpose:
  *		Manage changes in input states and provide an interface
@@ -33,6 +33,12 @@ var Input = new function() {
 
 	//Store input changes inbetween cycles
 	var bufferState = [];
+
+	//Store a map of the different axis values
+	var axisValues = [];
+
+	//Store an array of the different InputAxis objects
+	var axisObjects = [];
 
 	//Store the mouse position
 	this.mousePos = new Vec2();
@@ -54,14 +60,16 @@ var Input = new function() {
 		This function must be called oonce (and only once) per cycle. Call this function at the start of 
 		your game loop.
 
+		@param[in] pDelta - The delta time for cycle
+
 		Example:
 
 		function gameLoop() {
 			//Update input manager
-			Input.update();
+			Input.update(deltaTime);
 		}
 	*/
-	this.update = function() {
+	this.update = function(pDelta) {
 		//Loop through the buffer state and copy values over
 		for (var i = bufferState.length - 1; i >= 0; i--) {
 			//Copy the current state to the previous
@@ -69,6 +77,66 @@ var Input = new function() {
 
 			//Copy the current state from the buffer
 			curKeyState[i] = bufferState[i];
+		}
+
+		//Update the axis values
+		for (var axis in axisObjects) {
+			//Test axis is a property of the map
+			if (!axisObjects.hasOwnProperty(axis)) continue;
+
+			//Flag if input has been included
+			var inputTrue = false;
+
+			//Store the average strength of all the InputAxis objects
+			var strengthVal = 0;
+
+			//Store the average gravity of all the InputAxis objects
+			var gravAvg = 0;
+
+			//Loop through the axis objects
+			for (var i = axisObjects[axis].length - 1; i >= 0; i--) {
+				//Add the gravity of the object
+				gravAvg += axisObjects[axis][i].gravity;
+
+				//Check if positive button is down
+				if (curKeyState[axisObjects[axis][i].positiveKey]) {
+					//Add the strength to the total
+					strengthVal += axisObjects[axis][i].strength * pDelta;
+
+					//Flag input success
+					inputTrue = true;
+				}
+
+				//Check if negative key is down
+				if (curKeyState[axisObjects[axis][i].negativeKey]) {
+					//Add the strength to the total
+					strengthVal -= axisObjects[axis][i].strength * pDelta;
+
+					//Flag input success
+					inputTrue = true;
+				}
+			}
+
+			//Test if there was any strength applied 
+			if (inputTrue) axisValues[axis] += strengthVal;
+
+			//Apply gravity to the axis
+			else {
+				//Get the direction
+				var dir = Math.sign(axisValues[axis]) * -1;
+
+				//Get the average gravity value
+				gravAvg /= axisObjects[axis].length;
+
+				//Get the gravity applied value
+				var gravVal = axisValues[axis] + gravAvg * pDelta * dir;
+
+				//Assign axis value
+				axisValues[axis] = (Math.sign(gravVal) === dir ? 0 : gravVal);
+			}
+
+			//Clamp the axis value from -1 - 1
+			axisValues[axis] = (axisValues[axis] > 1 ? 1 : axisValues[axis] < -1 ? -1 : axisValues[axis]);
 		}
 	};
 
@@ -90,6 +158,143 @@ var Input = new function() {
 	*/
 	this.setCanvas = function(pCnv) {
 		screenCanvas = pCnv;
+	};
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////																											 ////
+	/////												  Axis Functions											 ////
+	/////																											 ////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/*
+		Input : addAxis - Add a new InputAxis object to be used by the Input manager
+		29/07/2016
+
+		@param[in] pAxis - The new InputAxis object to add to the Input manager
+
+		@return bool - Returns true if the axis was successfully added to the manager
+
+		Example:
+
+		//Setup Input axis'
+		if (Input.addAxis(horizontalAxis)) {
+			//TODO: Continue loading game values
+		}
+	*/
+	this.addAxis = function(pAxis) {
+		//Check pAxis is an InputAxis object
+		if (!(pAxis instanceof InputAxis)) return false;
+
+		//Check if axis already exists
+		if (!(pAxis.name in axisValues)) {
+			//Create the axis value
+			axisValues[pAxis.name] = 0;
+
+			//Create the array for InputAxis objects with this name
+			axisObjects[pAxis.name] = [];
+		}
+
+		//Add the the axis object to the map
+		axisObjects[pAxis.name].push(pAxis);
+
+		//Return success
+		return true;
+	};
+
+	/*
+		Input : removeAxis - Remove an InputAxis object from the Input manager
+		29/07/2016
+
+		@param[in] pAxis - The InputAxis object to remove from the Input manager
+
+		@return bool - Returns true if the object was successfully removed
+
+		Example:
+
+		if (Input.removeAxis(horizontalAxis)) {
+			//TODO: Prompt user for new input
+		}
+	*/
+	this.removeAxis = function(pAxis) {
+		//Check pAxis is an InputAxis object
+		if (!(pAxis instanceof InputAxis)) return false;
+
+		//Check if axis value exists
+		if (!(pAxis.name in axisValues)) return false;
+
+		//Track if the object was found
+		var found = false;
+
+		//Loop through the InputAxis objects to look for match
+		for (var i = axisObjects[pAxis.name].length - 1; i >= 0; i--) {
+			if (axisObjects[pAxis.name][i] === pAxis) {
+				//Remove the object from the array
+				axisObjects[pAxis.name].splice(i, 1);
+
+				//Set the found flag
+				found = true;
+
+				//Exit the loop
+				break;
+			}
+		}
+
+		//If the value was found check if axis values can be deleted
+		if (found && axisObjects[pAxis.name].length === 0) {
+			//Delete the axis value
+			delete axisValues[pAxis.name];
+
+			//Delete the axis the axis objects array
+			delete axisObjects[pAxis.name];
+		}
+
+		//Return could not find the item
+		return found;
+	};
+
+	/*
+		Input : clearAxis - Completly clears all InputAxis objects with a specified name
+		29/07/2016
+
+		@param[in] pName - The name of the axis to clear
+
+		@return bool - Returns true if the axis was successfully removed
+
+		Example:
+
+		if (Input.clearAxis("horizontal")) {
+			//TODO: Prompt user for new input
+		}
+	*/
+	this.clearAxis = function(pName) {
+		//Check if the axis exists
+		if (!(pName in axisValues)) return false;
+
+		//Delete the axis value
+		delete axisValues[pName];
+
+		//Delete the axis objects
+		delete axisObjects[pName];
+
+		//Return successfull
+		return true;
+	};
+
+	/*
+		Input : getAxis - Gets the value of the specified axis 
+		29/07/2016
+
+		@param[in] pName - The name of the axis to retrieve
+
+		@return number - Returns a number between 1 and -1 as the axis value
+
+		Example:
+
+		//Add player movement
+		playerPosition += PLAYER_MOVE_SPEED * Input.getAxis("move");
+	*/
+	this.getAxis = function(pName) {
+		return axisValues[pName];
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,15 +523,64 @@ var Input = new function() {
 	*/
 	window.addEventListener("mousemove", function(pEvt) {
 		//Set the new position
-		this.mousePos.x = pEvt.pageX;
-		this.mousePos.y = pEvt.pageY;
+		Input.mousePos.x = pEvt.pageX;
+		Input.mousePos.y = pEvt.pageY;
 
 		//Check if a canvas object has been set
-		if (typeof screenCanvas !== "undefined") {
-			this.mousePos.x -= screenCanvas.offsetLeft;
-			this.mousePos.y -= screenCanvas.offsetTop;
+		if (screenCanvas !== null) {
+			Input.mousePos.x -= screenCanvas.offsetLeft;
+			Input.mousePos.y -= screenCanvas.offsetTop;
 		}
 	}, false);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////																											 ////
+/////											 Object Definition											 	 ////
+/////																											 ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *		Name: InputAxis
+ *		Author: Mitchell Croft
+ *		Date: 29/07/2016
+ *
+ *		Purpose:
+ *		Allow for scaleable input return based on a combination
+ *		of input values (Key or button)
+ **/
+
+/*
+	InputAxis : Constructor - Initialise with default values
+	29/07/2016
+
+	@param[in] pName - A string defining a name to assign to the axis (WARNING: This must
+					   not change once it has been added to the Input manager)
+	@param[in] pPos - The key that adds a positive value to the axis (Default 0)
+	@param[in] pNeg - The key that adds a negative value to the axis (Default 0)
+	@param[in] pStr - The strength of this InputAxis object (1 takes one second 
+					  to reach full value, 2 half a second, 0.5 two seconds etc.) (Default 1)
+	@param[in] pGrav - The gravity of this InputAxis object (How long it takes to return 
+					   to a 0 value) (Default 1)
+
+	Example:
+
+	//Create a horizontal movement axis
+	var axis = new InputAxis("horizontal", Keys.D, Keys.A, 2, 0.5);
+*/
+function InputAxis(pName, pPos, pNeg, pStr, pGrav) {
+	//Store the name of the axis that this object effects
+	this.name = (typeof pName === "string" ? pName : "UNNAMED");
+
+	//Store key values that effect the axis value
+	this.positiveKey = (typeof pPos === "number" ? pPos : 0);
+	this.negativeKey = (typeof pNeg === "number" ? pNeg : 0);
+
+	//Store the strength of the input axis 
+	this.strength = (typeof pStr === "number" ? pStr : 1);
+
+	//Store the gravity of the input axis
+	this.gravity = (typeof pGrav === "number" ? pGrav : 1);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
