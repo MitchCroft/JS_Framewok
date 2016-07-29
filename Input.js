@@ -80,63 +80,60 @@ var Input = new function() {
 		}
 
 		//Update the axis values
-		for (var axis in axisObjects) {
-			//Test axis is a property of the map
-			if (!axisObjects.hasOwnProperty(axis)) continue;
+		for (var axisName in axisObjects) {
+			//Test this is actaully a name in the map
+			if (!axisObjects.hasOwnProperty(axisName)) continue;
 
 			//Flag if input has been included
-			var inputTrue = false;
-
-			//Store the average strength of all the InputAxis objects
 			var strengthVal = 0;
 
-			//Store the average gravity of all the InputAxis objects
+			//Store the average gravity of all InputAxis objects
 			var gravAvg = 0;
 
 			//Loop through the axis objects
-			for (var i = axisObjects[axis].length - 1; i >= 0; i--) {
-				//Add the gravity of the object
-				gravAvg += axisObjects[axis][i].gravity;
+			for (var i = axisObjects[axisName].length - 1; i >= 0; i--) {
+				//Add the gravity to the average
+				gravAvg += axisObjects[axisName][i].gravity;
 
-				//Check if positive button is down
-				if (curKeyState[axisObjects[axis][i].positiveKey]) {
-					//Add the strength to the total
-					strengthVal += axisObjects[axis][i].strength * pDelta;
+				//Get a total of the strength for this object
+				var objVal = 0;
 
-					//Flag input success
-					inputTrue = true;
-				}
+				//Check if positive key is down
+				if (curKeyState[axisObjects[axisName][i].positiveKey])
+					objVal += axisObjects[axisName][i].strength * pDelta;
 
 				//Check if negative key is down
-				if (curKeyState[axisObjects[axis][i].negativeKey]) {
-					//Add the strength to the total
-					strengthVal -= axisObjects[axis][i].strength * pDelta;
+				if (curKeyState[axisObjects[axisName][i].negativeKey])
+					objVal -= axisObjects[axisName][i].strength * pDelta;
 
-					//Flag input success
-					inputTrue = true;
-				}
+				//Check if the strength is stronger then current
+				if (Math.abs(objVal) > Math.abs(strengthVal))
+					strengthVal = objVal;
 			}
 
-			//Test if there was any strength applied 
-			if (inputTrue) axisValues[axis] += strengthVal;
+			//Test if there is any strength to apply
+			if (strengthVal) {
+				//Add the strength value
+				axisValues[axisName] += strengthVal;
 
-			//Apply gravity to the axis
+				//Clamp the axis value from -1 to 1
+				axisValues[axisName] = (axisValues[axisName] > 1 ? 1 : axisValues[axisName] < -1 ? -1 : axisValues[axisName]);
+			}
+
+			//If no strength apply gravity
 			else {
 				//Get the direction
-				var dir = Math.sign(axisValues[axis]) * -1;
+				var dir = Math.sign(axisValues[axisName]) * -1;
 
-				//Get the average gravity value
-				gravAvg /= axisObjects[axis].length;
+				//Average out the gravity value
+				gravAvg /= axisObjects[axisName].length;
 
-				//Get the gravity applied value
-				var gravVal = axisValues[axis] + gravAvg * pDelta * dir;
+				//Get the gravity value applied to the current value
+				var appliedVal = axisValues[axisName] + gravAvg * pDelta * dir;
 
-				//Assign axis value
-				axisValues[axis] = (Math.sign(gravVal) === dir ? 0 : gravVal);
+				//Assign the axis values
+				axisValues[axisName] = (Math.sign(appliedVal) === dir ? 0 : appliedVal);
 			}
-
-			//Clamp the axis value from -1 - 1
-			axisValues[axis] = (axisValues[axis] > 1 ? 1 : axisValues[axis] < -1 ? -1 : axisValues[axis]);
 		}
 	};
 
