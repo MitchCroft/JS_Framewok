@@ -1,4 +1,4 @@
-# JS_Framewok
+# JS_Framework
 A basic framework for 2D JavaScript games using the HTML5 canvas object
 
 This is a hobby project created by me to better learn JavaScript, create
