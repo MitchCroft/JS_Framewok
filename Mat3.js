@@ -43,9 +43,9 @@ function Mat3(pMat) {
 	//Check if a matrix was supplied to copy
 	if (pMat instanceof Mat3) {
 		this.data = [
-			[pMat.data[0][0], pMat.data[1][0], pMat.data[2][0]],
-			[pMat.data[0][1], pMat.data[1][1], pMat.data[2][1]],
-			[pMat.data[0][2], pMat.data[1][2], pMat.data[2][2]]
+			[pMat.data[0][0], pMat.data[0][1], pMat.data[0][2]],
+			[pMat.data[1][0], pMat.data[1][1], pMat.data[1][2]],
+			[pMat.data[2][0], pMat.data[2][1], pMat.data[2][2]]
 		];
 	}
 
