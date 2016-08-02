@@ -12,7 +12,7 @@
  *		Requires:
  *		Vec2.js
  *
- *		Version: 2.0		
+ *		Version: 2.1		
  *		Added properties as well as additional functionality (Inverse)
  *		
  *		Purpose:
@@ -135,7 +135,7 @@ Mat3.prototype = {
 		Example:
 
 		//Set the players position to center screen
-		playerGlobalTransform.position = new Vec2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+		playerGlobalTransform.position = new Vec2(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
 	*/
 	set position(pPos) {
 		this.data[2][0] = pPos.x;
@@ -166,7 +166,7 @@ Mat3.prototype = {
 		Example:
 
 		//Move the player across the screen
-		playerGlobalTransform.x = (Math.sin(Date.now()) + 1) / 2 * SCREEN_WIDTH;
+		playerGlobalTransform.x = (Math.sin(Date.now()) + 1) / 2 * CANVAS_WIDTH;
 	*/
 	set x(pVal) {
 		this.data[2][0] = pVal;
@@ -196,7 +196,7 @@ Mat3.prototype = {
 		Example:
 
 		//Move the player up and down the screen
-		playerGlobaltransform.y = (Math.sin(Date.now()) + 1) / 2 * SCREEN_HEIGHT;
+		playerGlobaltransform.y = (Math.sin(Date.now()) + 1) / 2 * CANVAS_HEIGHT;
 	*/
 	set y(pVal) {
 		this.data[2][1] = pVal;
