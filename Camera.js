@@ -44,7 +44,7 @@ function Camera(pWidth, pHeight, pDist) {
 
 	//Create and store a projection matrix
 	this.projection = new Mat3();
-	this.projection.data[0][0] = this.projection.data[1][1] = 2 / pDist;
+	this.projection.data[0][0] = this.projection.data[1][1] = 2 / (typeof pDist === "number" ? pDist : 1);
 	this.projection.data[2][0] = pWidth / 2;
 	this.projection.data[2][1] = pHeight / 2;
 };
