@@ -112,7 +112,7 @@ Camera.prototype = {
 		//Resize camera height
 		Camera.height = CANVAS_HEIGHT:
 	*/
-	set height() {
+	set height(pVal) {
 		this.projection.data[2][1] = pVal / 2;
 	},
 
@@ -128,7 +128,7 @@ Camera.prototype = {
 		var camPosX = Camera.x;
 	*/
 	get x() {
-		return position.x;
+		return this.position.x;
 	},
 
 	/*
