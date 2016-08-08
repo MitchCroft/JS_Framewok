@@ -82,127 +82,6 @@ Mat3.prototype = {
 	},
 
 	/*
-		Mat3 : xAxis - Get the X axis of the Mat3 object
-		28/07/2016
-
-		@return Vec2 - Returns a Vec2 object with the current Mat3's X axis
-
-		Example:
-
-		//Get the right direction of the Mat3
-		var right = myMat3.xAxis;
-	*/
-	get xAxis() {
-		return new Vec2(this.data[0][0], this.data[0][1]).normalize();
-	},
-
-	/*
-		Mat3 : yAxis - Get the Y axis of the Mat3 object
-		28/07/2016
-
-		@return Vec2 - Returns a Vec2 object with the current Mat3's Y axis
-
-		Example:
-
-		//Get the forward irection of the Mat3
-		var forward = myMat3.yAxis;
-	*/
-	get yAxis() {
-		return new Vec2(this.data[1][0], this.data[1][1]).normalize();
-	},
-
-	/*
-		Mat3 : position - Returns the position of the Mat3 object
-		28/07/2016
-
-		@return Vec2 - Returns a Vec2 object with the current Mat3's translation
-
-		Example:
-		
-		//Get the players global position
-		var position = playerGlobalTransform.position;
-	*/
-	get position() {
-		return new Vec2(this.data[2][0], this.data[2][1]);
-	},
-
-	/*
-		Mat3 : position - Set the position of the Mat3 object
-		02/08/2016
-
-		@param[in] pPos - A Vec2 object containing the new position
-
-		Example:
-
-		//Set the players position to center screen
-		playerGlobalTransform.position = new Vec2(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-	*/
-	set position(pPos) {
-		this.data[2][0] = pPos.x;
-		this.data[2][1] = pPos.y;
-	},
-
-	/*
-		Mat3 : x - Get the X position of the Mat3 object
-		02/08/2016
-
-		@return number - Returns the X position as a number
-
-		Example:
-
-		//Find the players X coord
-		var playerX = playerGlobalTransform.x;
-	*/
-	get x() {
-		return this.data[2][0];
-	},
-
-	/*
-		Mat3 : x - Set the X position of the Mat3 object
-		02/08/2016
-
-		@param[in] pVal - The new number value for the X position
-
-		Example:
-
-		//Move the player across the screen
-		playerGlobalTransform.x = (Math.sin(Date.now()) + 1) / 2 * SCREEN_WIDTH;
-	*/
-	set x(pVal) {
-		this.data[2][0] = pVal;
-	},
-
-	/*
-		Mat3 : y - Get the Y position of the Mat3 object
-		02/08/2016
-
-		@return number - Returns the Y position as a number
-
-		Example:
-
-		//Find the players Y coord
-		var playerY = playerGlobalTransform.y;
-	*/
-	get y() {
-		return this.data[2][1];
-	},
-
-	/*
-		Mat3 : Set the Y position of the Mat3 object
-		02/08/2016
-
-		@param[in] pVal - The new number value for the Y position
-
-		Example:
-
-		//Move the player up and down the screen
-		playerGlobaltransform.y = (Math.sin(Date.now()) + 1) / 2 * SCREEN_HEIGHT;
-	*/
-	set y(pVal) {
-		this.data[2][1] = pVal;
-	},
-
-	/*
 		Mat3 : transposed - Returns a copy of the current Mat3 object transposed
 		28/07/2016
 
@@ -679,6 +558,27 @@ Mat3.prototype.multiSet = function(pMat) {
 /////												   General Functions										 ////
 /////																											 ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+	multiMat3Vec2 - Multiplies a Mat3 object by a Vec2 object
+	08/08/2016
+
+	@param[in] pMat - The Mat3 object to use in the multiplication
+	@param[in] pVec - The Vec2 object to use in the multiplication
+
+	@return Vec2 - Returns a Vec2 object holding the result of the multiplication
+
+	Example:
+
+	//Transform a point by a matrix
+	var transformedPoint = multiMat3Vec2(globalMat, point);
+*/
+function multiMat3Vec2(pMat, pVec) {
+	return new Vec2(
+		pMat.data[0][0] * pVec.x + pMat.data[1][0] * pVec.y + pMat.data[2][0],
+		pMat.data[0][1] * pVec.x + pMat.data[1][1] * pVec.y + pMat.data[2][1]
+	);
+};
 
 /*
 	createTranslationMat - Create a translation matrix from the passed in values
