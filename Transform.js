@@ -28,7 +28,7 @@
 	//Create a new transform
 	var playerTransform = new Transform();
 */
-function Transform(pTrans) {
+function Transform() {
 	/*	WARNING:
 		Don't modify this internal object from the outside of the transform.
 		Instead use Transform properties and functions to modify these values
