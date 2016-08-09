@@ -380,7 +380,7 @@ Transform.prototype = {
 	set position(pPos) {
 		//Check if the transform has a parent set
 		if (this.__Internal__Dont__Modify__.parent instanceof Transform)
-			this.__Internal__Dont__Modify__.pos.set(multiMat3Vec2(this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed, pPos));
+			this.__Internal__Dont__Modify__.pos.set(this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed.multiVec(pPos));
 
 		//Otherwise set local position
 		else this.__Internal__Dont__Modify__.pos.set(pPos);
@@ -423,7 +423,7 @@ Transform.prototype = {
 			var tempVec = new Vec2(pVal, 0);
 
 			//Transform the position by the parent global matrix
-			tempVec = multiMat3Vec2(this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed, tempVec);
+			tempVec = this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed.multiVec(tempVec);
 
 			//Save the new local X value
 			this.__Internal__Dont__Modify__.pos.x = tempVec.x;
@@ -470,7 +470,7 @@ Transform.prototype = {
 			var tempVec = new Vec2(0, pVal);
 
 			//Transform the position by the parent global matrix
-			tempVec = multiMat3Vec2(this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed, tempVec);
+			tempVec = this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed.multiVec(tempVec);
 
 			//Save the new local X value
 			this.__Internal__Dont__Modify__.pos.y = tempVec.y;
@@ -941,7 +941,7 @@ Transform.prototype.removeChild = function(pChild) {
 	var ahead = playerTransform.transformPoint(new Vec2(0, 1).multi(AHEAD_CHECK_LENGTH));
 */
 Transform.prototype.transformPoint = function(pVec) {
-	return multiMat3Vec2(this.__Internal__Dont__Modify__.glbMat, pVec);
+	return this.__Internal__Dont__Modify__.glbMat.multiVec(pVec);
 };
 
 /*
@@ -959,5 +959,5 @@ Transform.prototype.transformPoint = function(pVec) {
 	var enemyInLocal = playerTransform.inverseTransformPoint(enemyPos);
 */
 Transform.prototype.inverseTransformPoint = function(pVec) {
-	return multiMat3Vec2(this.__Internal__Dont__Modify__.glbMat.inversed, pVec);
+	return this.__Internal__Dont__Modify__.glbMat.inversed.multiVec(pVec);
 };

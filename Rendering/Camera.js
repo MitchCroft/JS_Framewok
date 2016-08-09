@@ -26,7 +26,7 @@
 	@param[in] pWidth - The width of the viewport the camera will using
 	@param[in] pHeight - The height of the viewport the camera will using
 	@param[in] pDist - Scales the drawn elements to give the appearance of
-					   distance. 1 is regular. Must be greater than 0. (Default 0)
+					   distance. 1 is regular. Must be greater than 0. (Default 1)
 
 	Example:
 
@@ -234,7 +234,7 @@ Camera.prototype = {
 		var camView = Camera.view;
 	*/
 	get view() {
-		return this.transform.inverse();
+		return this.transform.inversed;
 	},
 
 	/*
