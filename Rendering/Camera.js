@@ -1,254 +1,428 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////																											 ////
-/////											 Object Definition											 	 ////
-/////																											 ////
+/////                                                                                                            ////
+/////                                            Object Definition                                               ////
+/////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
- *		Name: Camera
- *		Author: Mitchell Croft
- *		Date: 02/08/2016
+ *      Name: Camera
+ *      Author: Mitchell Croft
+ *      Date: 28/08/2016
  *
- *		Requires:
- *		Vec2.js, Mat3.js
+ *      Requires:
+ *      Mat3.js
  *
- *		Version: 1.0
- *
- *		Purpose:
- *		Provide a basic 2D orthographic camera for rendering
- *		game worlds to a HTML5 canvas object
+ *      Version: 2.0
+ *      Added scaling to provide consistant viewing area across 
+ *      different resolution canvas objects.
+ *  
+ *      Purpose:
+ *      Provide a basic 2D orthographic camera for rendering 
+ *      game worlds to a HTML5 canvas object
  **/
 
 /*
-	Camera : Constructor - Initialise with default values for specified viewport dimensions
-	02/08/2016
+    Camera : Constructor - Initialise with default values for the specified
+                           viewport dimensions on the supplied canvas
+    28/08/2016
 
-	@param[in] pWidth - The width of the viewport the camera will using
-	@param[in] pHeight - The height of the viewport the camera will using
-	@param[in] pDist - Scales the drawn elements to give the appearance of
-					   distance. 1 is regular. Must be greater than 0. (Default 1)
+    @param[in/out] pCanvas - The canvas object to use for scaling the camera view
+    @param[in] pViewWidth - The width of the cameras view (World Units)
+    @param[in] pViewHeight - The height of the cameras view (World Units)
+    @param[in] pDistance - Scales the drawn elements to give the appearance
+                           of distance. 1 is regular. Must be greater than 0.
+                           (Default 1) 
+    
+    Example:
 
-	Example:
-
-	//Create the world camera
-	var worldCam = new Camera(1280, 720);
-	OR
-	var worldCam = new Camera(1280, 720, 5);
+    //Create the world camera
+    var worldCam = new Camera(gameCanvas, 1280, 720);
+    OR
+    var worldCam = new Camera(gameCanvas, 1280, 720, 5);
 */
-function Camera(pWidth, pHeight, pDist) {
-	//Store the position of the camera in the world
-	this.position = new Vec2();
+function Camera(pCanvas, pViewWidth, pViewHeight, pDistance) {
+    /*  WARNING:
+        Don't modify this internal object from the outside of the camera.
+        Instead use camera properties and functions to modify these values
+        as this allows for the internal information to update itself and keep it
+        correct.
+    */
+    this.__Internal__Dont__Modify__ = {
+        //World values
+        pos: new Vec2(),
+        rot: 0,
+        dist: 2 / (typeof pDistance === "number" ? (pDistance < 0.001 ? 0.001 : pDistance) : 1),
 
-	//Store the rotation of the camera (Radians)
-	this.rotation = 0;
+        //Rendering values
+        canvasDimensions: new Vec2(pCanvas.width, pCanvas.height),
+        viewportSize: new Vec2(pViewWidth, pViewHeight),
+        viewportScale: new Vec2(pCanvas.width / pViewWidth, pCanvas.height / pViewHeight),
+        projection: new Mat3()
+    };
 
-	//Create and store a projection matrix
-	this.projection = new Mat3();
-	this.projection.data[0][0] = this.projection.data[1][1] = 2 / (typeof pDist === "number" ? pDist : 1);
-	this.projection.data[2][0] = pWidth / 2;
-	this.projection.data[2][1] = pHeight / 2;
+    //Setup the projection matrix
+    this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
+    this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
+    this.__Internal__Dont__Modify__.projection.data[2][0] = pViewWidth / 2;
+    this.__Internal__Dont__Modify__.projection.data[2][1] = pViewHeight / 2;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////																											 ////
-/////												Property Definitions										 ////
-/////																											 ////
+/////                                                                                                            ////
+/////                                               Property Definitions                                         ////
+/////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Camera.prototype = {
-	/*
-		Camera : width - Get the width of the vieport the camera is using
-		02/08/2016
+    /*
+        Camera : position - Return the world position of the Camera object
+        28/08/2016
 
-		@return number - Returns the width as a number
+        @return Vec2 - Returns a Vec2 object containing the position
 
-		Example:
+        Example:
 
-		//Get the width of the camera's view
-		var cameraWidth = Camera.width;
-	*/
-	get width() {
-		return this.projection.data[2][0] * 2;
-	},
+        //Get the world position of the camera
+        var cameraPos = Camera.position;
+    */
+    get position() {
+        return new Vec2(this.__Internal__Dont__Modify__.pos);
+    },
 
-	/*
-		Camera : width - Set the width of the viewport the camera is using
-		02/08/2016
+    /*
+        Camera : position - Set the world position of the Camera object
+        28/08/2016
 
-		@param[in] pVal - The value to set the viewport width to
+        @param pPos - A Vec2 object containing the new Camera position
 
-		Example:
+        Example:
 
-		//Resize the camera width
-		Camera.width = CANVAS_WIDTH;
-	*/
-	set width(pVal) {
-		this.projection.data[2][0] = pVal / 2;
-	},
+        //Move the camera to the player
+        Camera.position = playerPos;
+    */
+    set position(pPos) {
+        this.__Internal__Dont__Modify__.pos.set(pPos);
+    },
 
-	/*
-		Camera : height - Get the height of the viewport the camera is using
-		02/08/2016
+    /*
+        Camera : x - Return the X axis world position of the Camera object
+        28/08/2016
 
-		@return number - Returns the height as a number
+        @return number - Returns the X position as a number
 
-		Example:
+        Example:
 
-		//Get the height of the camera's view
-		var cameraHeight = Camera.height;
-	*/
-	get height() {
-		return this.projection.data[2][1] * 2;
-	},
+        //Get the x position of the camera
+        var camPosX = Camera.x;
+    */
+    get x() {
+        return this.__Internal__Dont__Modify__.pos.x;
+    },
 
-	/*
-		Camera : height - Set the height of the viewport the camera is using
-		02/08/2016
+    /*
+        Camera : x - Set the X world position of the Camera object
+        28/08/2016
 
-		@param[in] pVal - The value to set the viewport height to
+        @param[in] pVal - The new value to set as the X position
 
-		Example:
+        Example:
 
-		//Resize camera height
-		Camera.height = CANVAS_HEIGHT:
-	*/
-	set height(pVal) {
-		this.projection.data[2][1] = pVal / 2;
-	},
+        //Move the camera to the players X position
+        Camera.x = playerPosition.x;
+    */
+    set x(pVal) {
+        this.__Internal__Dont__Modify__.pos.x = pVal;
+    },
 
-	/*
-		Camera : x - Get the X position of the Camera object
-		02/08/2016
+    /*
+        Camera : y - Get the Y world position of the Camera object
+        28/08/2016
 
-		@return number - Returns the X position as a number
+        @return number - Returns the Y position as a number
 
-		Example:
+        Example:
 
-		//Get the x position of the camera
-		var camPosX = Camera.x;
-	*/
-	get x() {
-		return this.position.x;
-	},
+        //Get the y position of the camera
+        var camPosY = Camera.y;
+    */
+    get y() {
+        return this.__Internal__Dont__Modify__.pos.y;
+    },
 
-	/*
-		Camera : x - Set the X position of the Camera object
-		02/08/2016
+    /*
+        Camera : y - Set the Y world position of the Camera object
+        28/08/2016
 
-		@param[in] pVal - The new value to set as the X position
+        @param[in] pVal - The new value to set as the Y position
 
-		Example:
+        Example:
 
-		//Move the camera to the players X position
-		Camera.x = playerPosition.x;
-	*/
-	set x(pVal) {
-		this.position.x = pVal;
-	},
+        //Move the camera to the players Y position
+        Camera.y = playerPosition.y;
+    */
+    set y(pVal) {
+        this.__Internal__Dont__Modify__.pos.y = pVal;
+    },
 
-	/*
-		Camera : y - Get the Y position of the Camera object
-		02/08/2016
+    /*
+        Camera : rotation - Get the rotation of the Camera object
+        28/08/2016
 
-		@return number - Returns the Y position as a number
+        @return number - Returns the current rotation of the Camera in degrees
 
-		Example:
+        Example:
 
-		//Get the y position of the camera
-		var camPosY = Camera.y;
-	*/
-	get y() {
-		return this.position.y;
-	},
+        //Get the rotation of the camera
+        var camRot = Camera.rotation;
+    */
+    get rotation() {
+        return this.__Internal__Dont__Modify__.rot;
+    },
 
-	/*
-		Camera : y - Set the Y position of the Camera object
-		02/08/2016
+    /*
+        Camera : rotation - Set the rotation of the Camera object
+        28/08/2016
 
-		@param[in] pVal - The new value to set as the Y position
+        @param[in] pVal - A number defining the new rotation of the camera 
+                          object in degrees
 
-		Example:
+        Example:
+        
+        //Rotate the camera over time
+        Camera.rotation = ((Math.sin(Date.now() * 0.001) + 1) / 2) * 360;
+    */
+    set rotation(pVal) {
+        this.__Internal__Dont__Modify__.rot = pVal;
+    },
 
-		//Move the camera to the players Y position
-		Camera.y = playerPosition.y;
-	*/
-	set y(pVal) {
-		this.position.y = pVal;
-	},
+    /*
+        Camera : distance - Get the scale value emulating distance from the canvas
+        28/08/2016
 
-	/*
-		Camera : distance - Get the scale value emulating distance from the canvas
-		02/08/2016
+        @return number - Returns a number representing the distance of the Camera
 
-		@return number - Returns a number representing the distance of the camera
+        Example:
 
-		Example:
+        //Get the distance of the camera 
+        var camDistance = Camera.distance;
+    */
+    get distance() {
+        return 2 / this.__Internal__Dont__Modify__.dist;
+    },
 
-		//Get the distance of the camera
-		var camDistance = Camera.distance;
-	*/
-	get distance() {
-		return 2 / this.projection.data[0][0];
-	},
+    /*
+        Camera : distance - Set the scale value emulating distance from the canvas
+        28/08/2016
 
-	/*
-		Camera : distance - Set the scale value emulating distance from the canvas
-		02/08/2016
+        @param[in] pVal - The number vlaue to set the distance to (Must be greater
+                          than 0)
 
-		@param[in] pVal - The value to set the distance to
+        Example:
 
-		Example:
+        //Zoom the camera in and out over time
+        Camera.distance = ((Math.sin(Date.now() * 0.001) + 1) / 2) * (MAX - MIN) + MIN;
+    */
+    set distance(pVal) {
+        //Update the distance value
+        this.__Internal__Dont__Modify__.dist = 2 / (pVal < 0.001 ? 0.001 : pVal);
 
-		//Zoom the camera in and out over time
-		Camera.distance = ((Math.sin(Date.now()) + 1) / 2) * (MAX - MIN) + MIN;
-	*/
-	set distance(pVal) {
-		this.projection.data[0][0] =
-			this.projection.data[1][1] = 2 / pVal;
-	},
+        //Update the projection matrix
+        this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
+        this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
+    },
 
-	/*
-		Camera : transform - Get the transform for the Camera object
-		02/08/2016
+    /*
+        Camera : canvasDimensions - Set the canvas dimensions that are used for Camera object
+        28/08/2016
 
-		@return Mat3 - Returns a Mat3 object holding the transform for the camera
+        @param[in] pDim - A Vec2 object that contains the new canvas dimensions
 
-		Example:
+        Example:
 
-		//Get the camera's transform
-		var camTransform = Camera.transform;
-	*/
-	get transform() {
-		return createTransform(this.position.x, this.position.y, this.rotation);
-	},
+        //TODO: Setup callback for canvas resize
 
-	/*
-		Camera : view - Get the view matrix from the Camera object
-		02/08/2016
+        //Resize the cameras canvas size
+        Camera.canvasDimensions = new Vec2(Canvas.width, Canvas.height);
+    */
+    set canvasDimensions(pDim) {
+        //Save the new canvas dimensions
+        this.__Internal__Dont__Modify__.canvasDimensions.set(pDim);
 
-		@return Mat3 - Returns a Mat3 object holding the view matrix for the camera
+        //Update the viewport scale
+        this.__Internal__Dont__Modify__.viewportScale.x = this.__Internal__Dont__Modify__.canvasDimensions.x / this.__Internal__Dont__Modify__.viewportSize.x;
+        this.__Internal__Dont__Modify__.viewportScale.y = this.__Internal__Dont__Modify__.canvasDimensions.y / this.__Internal__Dont__Modify__.viewportSize.y;
 
-		Example:
+        //Update the projection matrix
+        this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
+        this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
+        this.__Internal__Dont__Modify__.projection.data[2][0] = pDim.x / 2;
+        this.__Internal__Dont__Modify__.projection.data[2][1] = pDim.y / 2;
+    },
 
-		//Get the camera's view matrix
-		var camView = Camera.view;
-	*/
-	get view() {
-		return this.transform.inversed;
-	},
+    /*
+        Camera : viewDimensions - Get the viewport dimensions of the Camera object
+        28/08/2016
 
-	/*
-		Camera : projectionView - Get the projection view matrix from the Camera object
-		02/08/2016
+        @return Vec2 - Returns a Vec2 object containing the viewport dimensions
 
-		@return Mat3 - Returns a Mat3 object holding the projection view matrix for the camera
+        Example:
 
-		Example:
+        //Get the viewport dimensions of the world camera
+        var viewDim = Camera.viewDimensions;
+    */
+    get viewDimensions() {
+        return new Vec2(this.__Internal__Dont__Modify__.viewportSize);
+    },
 
-		//Get the projection view matrix
-		var projView = Camera.projectionView;
-	*/
-	get projectionView() {
-		return this.projection.multi(this.view);
-	}
+    /*
+        Camera : viewDimensions - Set the viewport dimensions of the Camera object
+        28/08/2016
+
+        @param[in] pDim - A Vec2 object containing the new viewport dimensions for
+                          the Camera object
+
+        Example:
+
+        //Set the viewport dimensions of the world camera
+        Camera.viewDimensions = new Vec2(1280, 720);
+    */
+    set viewDimensions(pDim) {
+        //Set the new view dimensions
+        this.__Internal__Dont__Modify__.viewportSize.set(pDim);
+
+        //Adjust the viewport scale values
+        this.__Internal__Dont__Modify__.viewportScale.x = this.__Internal__Dont__Modify__.canvasDimensions.x / this.__Internal__Dont__Modify__.viewportSize.x;
+        this.__Internal__Dont__Modify__.viewportScale.y = this.__Internal__Dont__Modify__.canvasDimensions.y / this.__Internal__Dont__Modify__.viewportSize.y;
+
+        //Adjust the projection matrix
+        this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
+        this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
+    },
+
+    /*
+        Camera : viewWidth - Get the viewport width of the Camera object
+        28/08/2016
+
+        @return number - Returns a number with the viewport width of the Camera
+
+        Example:
+
+        //Get the width of the cameras viewport
+        var camViewWidth = Camera.viewWidth;
+    */
+    get viewWidth() {
+        return this.__Internal__Dont__Modify__.viewportSize.x;
+    },
+
+    /*
+        Camera : viewWidth - Set the viewport width of the Camera object
+        28/08/2016
+
+        @param[in] pVal - A number representing the new width of the Camera
+                          objects viewport
+
+        Example:
+
+        //Set the camera viewport width
+        Camera.viewWidth = 1280;
+    */
+    set viewWidth(pVal) {
+        //Set the new view dimensions
+        this.__Internal__Dont__Modify__.viewportSize.x = pVal;
+
+        //Adjust the viewport scale values
+        this.__Internal__Dont__Modify__.viewportScale.x = this.__Internal__Dont__Modify__.canvasDimensions.x / this.__Internal__Dont__Modify__.viewportSize.x;
+
+        //Adjust the projection matrix
+        this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
+    },
+
+    /*
+        Camera : viewHeight - Get the viewport height of the Camera object
+        28/08/2016
+
+        @return number - Returns a number with the viewport height of the Camera
+
+        Example:
+
+        //Get the height of the cameras viewport
+        var camViewHeight = Camera.viewHeight;
+    */
+    get viewHeight() {
+        return this.__Internal__Dont__Modify__.viewportSize.y;
+    },
+
+    /*
+        Camera : viewHeight - Set the viewport height of the Camera object
+        28/08/2016
+
+        @param[in] pVal - A number representing the new height of the Camera
+                          objects viewport
+
+        Example:
+
+        //Set the camera viewport height
+        Camera.viewHeight = 720;
+    */
+    set viewHeight(pVal) {
+        //Set the new view dimensions
+        this.__Internal__Dont__Modify__.viewportSize.y = pVal;
+
+        //Adjust the viewport scale values
+        this.__Internal__Dont__Modify__.viewportScale.y = this.__Internal__Dont__Modify__.canvasDimensions.y / this.__Internal__Dont__Modify__.viewportSize.y;
+
+        //Adjust the projection matrix
+        this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
+    },
+
+    /*
+        Camera : globalMat - Get the global matrix for the Camera object
+        28/08/2016
+
+        @return Mat3 - Returns a Mat3 object holding the global transform for
+                       the Camera object
+
+        Example:
+
+        //Get the world cameras global matrix
+        var camGlobal = Camera.globalMat;
+    */
+    get globalMat() {
+        return createTransform(this.__Internal__Dont__Modify__.pos.x,
+            this.__Internal__Dont__Modify__.pos.y,
+            this.__Internal__Dont__Modify__.rot * Math.PI / 180);
+    },
+
+    /*
+        Camera : view - Get the view matrix from the camera object
+        28/08/2016
+
+        @return Mat3 - Returns a Mat3 object holding the view matrix for the 
+                       Camera object
+
+        Example:
+
+        //Get the cameras view matrix
+        var vamView = Camera.view;
+    */
+    get view() {
+        return this.globalMat.inverse();
+    },
+
+    /*
+        Camera : projectionView - Get the projection view amtrix from the Camera 
+                                  object
+        28/08/2016
+
+        @return Mat3 - Returns a Mat3 object holding the projection matrix for
+                       Camera object
+
+        Example:
+
+        //Get the projection view matrix from the camera
+        var projView = Camera.projectionView;
+    */
+    get projectionView() {
+        return this.__Internal__Dont__Modify__.projection.multi(this.view);
+    }
 };
