@@ -44,11 +44,11 @@ playerChild.transform.localYScale = 2;
 playerChild.shape.fillColor = new Color().randomize();
 
 //Define the area in which the game objects can spawn
-var spawnBounds = new Vec2(graphics.width * 5, graphics.height * 5);
+var spawnBounds = new Vec2(graphics.width * 15, graphics.height * 15);
 
 //Create the game objects
 var objects = [];
-for (var i = 0; i < 200; i++) {
+for (var i = 0; i < 1000; i++) {
     objects[i] = {
         transform: new Transform(),
         shapes: [createPrimitiveShape(Math.floor(Math.random() * 3), Math.random() * 90 + 10),

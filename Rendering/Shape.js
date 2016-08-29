@@ -246,9 +246,28 @@ Shape.prototype.setInterpolatedPoints = function(pCount) {
     var morphedShape = myShape.morph(otherShape, (Math.sin(Date.now() * 0.001) + 1) / 2);
 */
 Shape.prototype.morph = function(pEnd, pT) {
+    //Set recursive function to find the HCD
+    var HCD = function(pA, pB) {
+        //If pB has no value return a
+        if (!pB) return pA;
+
+        //Recurse down
+        return HCD(pB, pA % pB);
+    };
+
+    //Set function to find the lowest common multiple
+    var LCM = function(pA, pB) {
+        return Math.abs((pA * pB) / HCD(pA, pB));
+    };
+
+    //Find the number of points that need to be found
+    var pointCount = LCM(this.points.length, pEnd.points.length);
+
     //Ensure the Shapes have the same number of points
-    var start = new Shape(this).setInterpolatedPoints(this.points.length * pEnd.points.length);
-    var end = new Shape(pEnd).setInterpolatedPoints(this.points.length * pEnd.points.length);
+    var start = (this.points.length === pointCount ? this :
+        new Shape(this).setInterpolatedPoints(this.points.length * pEnd.points.length));
+    var end = (pEnd.points.length === pointCount ? pEnd :
+        new Shape(pEnd).setInterpolatedPoints(this.points.length * pEnd.points.length));
 
     //Create a new Shape object
     var temp = new Shape();
