@@ -176,6 +176,7 @@ Shape.prototype.draw = function(pCtx, pTrans, pPointSize) {
                 pCtx.fill();
 
                 //Outline the circle
+                pCtx.lineWidth = 1;
                 pCtx.strokeStyle = "white";
                 pCtx.stroke();
             }
