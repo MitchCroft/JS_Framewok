@@ -44,14 +44,16 @@ playerChild.transform.localYScale = 2;
 playerChild.shape.fillColor = new Color().randomize();
 
 //Define the area in which the game objects can spawn
-var spawnBounds = new Vec2(graphics.width * 15, graphics.height * 15);
+var spawnBounds = new Vec2(graphics.width * 5, graphics.height * 5);
 
 //Create the game objects
 var objects = [];
-for (var i = 0; i < 1000; i++) {
+for (var i = 0; i < 200; i++) {
     objects[i] = {
         transform: new Transform(),
-        shape: createPrimitiveShape(ShapeType.SQUARE, Math.random() * 90 + 10)
+        shapes: [createPrimitiveShape(Math.floor(Math.random() * 3), Math.random() * 90 + 10),
+            createPrimitiveShape(Math.floor(Math.random() * 3), Math.random() * 90 + 10)
+        ]
     };
 
     //Generate a random position
@@ -64,7 +66,8 @@ for (var i = 0; i < 1000; i++) {
     objects[i].transform.parent = rootNode;
 
     //Generate a random fill color
-    objects[i].shape.fillColor = new Color().randomize();
+    for (var j = 0; j < objects[i].shapes.length; j++)
+        objects[i].shapes[j].fillColor = new Color().randomize();
 }
 
 //Create the camera
@@ -103,8 +106,13 @@ function gameLoop(pDelta) {
     var projView = camera.projectionView;
 
     //Draw all objects
-    for (var i = 0; i < objects.length; i++)
-        objects[i].shape.draw(graphics.draw, projView.multi(objects[i].transform.globalMatrix));
+    for (var i = 0; i < objects.length; i++) {
+        //Get the shape to render
+        var merged = objects[i].shapes[0].morph(objects[i].shapes[1], (Math.sin(Date.now() * 0.001) + 1) / 2);
+
+        //Render the shape
+        merged.draw(graphics.draw, projView.multi(objects[i].transform.globalMatrix));
+    }
 
     //Draw the player child
     playerChild.shape.draw(graphics.draw, projView.multi(playerChild.transform.globalMatrix));

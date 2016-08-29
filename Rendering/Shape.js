@@ -86,6 +86,8 @@ function Shape(pCopy) {
     @param[in] pCtx - The context the the shape should be rendered to
     @param[in] pTrans - An optional Mat3 object to be applied to the shapes
                         coordinate values
+    @param[in] pPointSize - Draws circles over the points of the shape
+                            for debugging purposes in the specified size
 
     Example:
 
@@ -96,8 +98,13 @@ function Shape(pCopy) {
 
     //Draw the player using their transform
     playerShape.draw(context, playerGlobalMat3);
+
+    OR
+
+    //Debug the player shape
+    playerShape.draw(context, playerGlobalMat3, 3);
 */
-Shape.prototype.draw = function(pCtx, pTrans) {
+Shape.prototype.draw = function(pCtx, pTrans, pPointSize) {
     //Check there are colors to render the shape with
     if ((this.fillColor instanceof Color || this.outlineColor instanceof Color) && this.points.length) {
         //Save if a transform has been set
@@ -145,6 +152,33 @@ Shape.prototype.draw = function(pCtx, pTrans) {
 
             //Outline the shape
             pCtx.stroke();
+        }
+
+        //Check for debugging points
+        if (typeof pPointSize === "number") {
+            //Loop through the points to draw them
+            for (var i = 0; i < this.points.length; i++) {
+                //Get the point
+                var point = (transformSet ? pTrans.multiVec(this.points[i]) :
+                    this.points[i]);
+
+                //Start rendering circle
+                pCtx.beginPath();
+
+                //Define the circle
+                pCtx.arc(point.x, point.y, pPointSize, 0, Math.PI * 2);
+
+                //Finish rendering the circle
+                pCtx.closePath();
+
+                //Fill the circle
+                pCtx.fillStyle = "black";
+                pCtx.fill();
+
+                //Outline the circle
+                pCtx.strokeStyle = "white";
+                pCtx.stroke();
+            }
         }
     }
 };
@@ -213,10 +247,8 @@ Shape.prototype.setInterpolatedPoints = function(pCount) {
 */
 Shape.prototype.morph = function(pEnd, pT) {
     //Ensure the Shapes have the same number of points
-    var start = (this.points.length >= pEnd.points.length ? this :
-        new Shape(this).setInterpolatedPoints(pEnd.points.length));
-    var end = (pEnd.points.length >= this.points.length ? pEnd :
-        new Shape(pEnd).setInterpolatedPoints(this.points.length));
+    var start = new Shape(this).setInterpolatedPoints(this.points.length * pEnd.points.length);
+    var end = new Shape(pEnd).setInterpolatedPoints(this.points.length * pEnd.points.length);
 
     //Create a new Shape object
     var temp = new Shape();
