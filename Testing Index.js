@@ -1,14 +1,14 @@
 //Create the graphics manager
 var graphics = new Graphics(window.innerWidth, window.innerHeight);
 
-//Add the window callback
-window.addEventListener("resize", function() {
+//Set the window resize callback
+graphics.setWindowResizeCallback(function(pWidth, pHeight) {
     //Force the graphics canvas to match the window size
-    graphics.size = new Vec2(window.innerWidth, window.innerHeight);
+    graphics.size = new Vec2(pWidth, pHeight);
 
     //Debug out the new canvas dimensions
-    console.log(graphics.width + " " + graphics.height);
-}, false);
+    console.log(pWidth + " " + pHeight);
+});
 
 //Set the canvas within the Input Manager
 Input.setCanvas(graphics.canvas);
@@ -75,9 +75,9 @@ var camera = new Camera(graphics.canvas, 1920, 1080, 2);
 var CAMERA_SPEED = 2;
 
 //Create the cameras canvas size change callback
-graphics.addResizeEvent(function(pDim) {
+graphics.addCanvasResizeEvent(function(pWidth, pHeight) {
     //Set the canvas size
-    camera.canvasDimensions = pDim;
+    camera.canvasDimensions = new Vec2(pWidth, pHeight);
 });
 
 ///Initial update of all transforms

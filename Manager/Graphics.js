@@ -7,10 +7,10 @@
 /*
  *      Name: Graphics
  *      Author: Mitchell Croft
- *      Date: 31/07/2016
+ *      Date: 30/08/2016
  *
- *      Version: 2.0
- *      Added properties to improve usability
+ *      Version: 2.1
+ *      Added window monitoring to provide window resize callback functionality
  *
  *      Requires:
  *      Mat3.js, Color.js
@@ -22,42 +22,49 @@
  **/
 
 /*
-    Graphics : Constructor - Initialise with graphics manager
-    31/07/2016
+    Graphics : Constructor - Initialise the graphics manager
+    30/08/2016
 
     @param[in] pWidth - The desired width of the canvas (Default to tag settings)
     @param[in] pHeight - The desired height of the canvas (Default to tag settings)
-    @param[in] pID - The id of the canvas object to retrieve (Default first on page)
+    @param[in] pID - The ID of the canvas object to retrieve (Default to first on page)
+    @param[in] pResizeCallback - A bool flag to indicate if the graphics object should
+                                 call a user defiend callback when the window resizes (Default true)
 
     Example:
 
     //Create the graphics object
-    var graphics = new Graphics(1280, 720, "gameCanvas");
+    var graphics = new Graphics();
     OR
     var graphics = new Graphics(1280, 720);
     OR
-    var graphics = new Graphics();  
+    var graphics = new Graphics(1280, 720, "gameCanvas");
+    OR
+    var graphics = new Graphics(1280, 720, "gameCanvas", false);
 */
-function Graphics(pWidth, pHeight, pID) {
-    //Get the first canvas object
+function Graphics(pWidth, pHeight, pID, pResizeCallback) {
+    //Get the canvas object
     this.canvas = (typeof pID === "string" ? document.getElementById(pID) :
         document.getElementsByTagName("canvas")[0]);
+
+    //Set the window dimensions
+    if (typeof pWidth === "number") this.canvas.width = Math.abs(pWidth);
+    if (typeof pHeight === "number") this.canvas.height = Math.abs(pHeight);
 
     //Get the 2D context from the canvas
     this.draw = this.canvas.getContext("2d");
 
-    //Create a render stack 
+    //Create the render stack
     var renderStack = [];
 
-    //Store a map loaded images
+    //Store a map of loaded images
     var imageMap = [];
 
-    //Set the window dimensions
-    if (typeof pWidth === "number") this.canvas.width = Math.round(pWidth);
-    if (typeof pHeight === "number") this.canvas.height = Math.round(pHeight);
+    //Store a callback to a function which takes in the new window dimensions
+    var windowResizeCallback = null;
 
-    //Save a list of resize event callbacks
-    var resizeEvents = [];
+    //Save a list of callbacks to execute when the canvas changes size
+    var canvasResizeEvents = [];
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////                                                                                                            ////
@@ -166,51 +173,121 @@ function Graphics(pWidth, pHeight, pID) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-        Graphics : addResizeEvent - Add a new function to be called as a canvas resize event callback
-        28/08/2016
+        Graphics : setWindowResizeCallback - Set the callback function for the window resize event
+        30/08/2016
 
-        @param[in] pCB - A function that takes in a Vec2 object with the new canvas dimensions
+        @param[in] pCB - A function that takes in the new width and height of the viewable area (Or null
+                         to remove any callbacks)
 
-        @return bool - Returns true if the callback was added to the event list
+        @return bool - Returns true if the callback was set
 
         Example:
 
-        //Add a callback to canvas resizing
-        if (Graphics.addResizeEvent(resizeFunction)) {
-            //TODO: Output success message
-        }
+        //Set the window resize callback
+        Graphics.setWindowResizeCallback(function(pWidth, pHeight) {
+            //TODO: React to the window resize
+        });
     */
-    this.addResizeEvent = function(pCB) {
-        //Ensure the parameter is a function
-        if (typeof pCB !== "function") return false;
+    this.setWindowResizeCallback = function(pCB) {
+        //Check the parameter is a function
+        if (pCB !== null && typeof pCB !== "function") return false;
 
-        //Check if it has already been added
-        for (var i = resizeEvents.length - 1; i >= 0; i--) {
-            if (resizeEvents[i] === pCB) return false;
-        }
-
-        //Add the callback to the list
-        resizeEvents.push(pCB);
+        //Overwrite previous callback
+        windowResizeCallback = pCB;
 
         //Return success
         return true;
     };
 
     /*
-        Graphics : triggerResizeEvents - Go through and call all canvas resize event callbacks
-                                         (Called through size, width and height properties)
-        28/08/2016
+        Graphics : addCanvasResizeEvent - Add a callback function to be called when the canvas is resized 
+                                          via the Graphics object
+        30/08/2016
+
+        @param[in] pCB - A function that takes in the new width and height of the viewable area as parameters
+
+        @return bool - Returns true if the callback was added to the event list
 
         Example:
 
-        //Force resize callbacks 
+        //Add a callback to canvas resizing
+        if (Graphics.addCanvasResizeEvent(resizeFunction)) {
+            //TODO: Output the success message
+        }
+    */
+    this.addCanvasResizeEvent = function(pCB) {
+        //Ensure the parameter is a function
+        if (typeof pCB !== "function") return false;
+
+        //Check that the function ahs not already been added once
+        for (var i = 0; i < canvasResizeEvents.length; i++) {
+            if (canvasResizeEvents[i] === pCB) return false;
+        }
+
+        //Add the callback to the list
+        canvasResizeEvents.push(pCB);
+
+        //Return success
+        return true;
+    };
+
+    /*
+        Graphics : removeCanvasResizeEvent - Remove a callback function from the canvas resize events list
+        30/08/2016
+
+        @param[in] pCB - The function to remove from the callback list
+
+        @return bool - Returns true if the callback was removed from the list
+
+        Example:
+
+        //Remove the callback from the canvas resizing
+        if (Graphics.removeCanvasResizeEvent(resizeFunction)) {
+            //TODO: Output the cuccess message
+        }
+    */
+    this.removeCanvasResizeEvent = function(pCB) {
+        //Loop through the events list
+        for (var i = 0; i < canvasResizeEvents.length; i++) {
+            //Check for function amtch
+            if (canvasResizeEvents[i] === pCB) {
+                //remove the function from the list
+                canvasResizeEvents.splice(i, 1);
+
+                //Return success
+                return true;
+            }
+        }
+
+        //Default return failure
+        return false;
+    };
+
+    /*
+        Graphics : triggerResizeEvents - Go through and call all canvas resize event callbacks
+                                         (Called through size, width and height properties)
+        30/08/2016
+
+        Example:
+
+        //Force resize callbacks
         Graphics.triggerResizeEvents();
     */
     this.triggerResizeEvents = function() {
         //Loop through all resize events
-        for (var i = resizeEvents.length - 1; i >= 0; i--)
-            resizeEvents[i](new Vec2(this.canvas.width, this.canvas.height));
+        for (var i = 0; i < canvasResizeEvents.length; i++)
+            canvasResizeEvents[i](this.canvas.width, this.canvas.height);
     };
+
+    //////////////////////////////-----Setup Window Resize Callback-----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    if (pResizeCallback !== false) {
+        //Assign the window callback
+        window.addEventListener("resize", function() {
+            //If the callback function has been set call it
+            if (typeof windowResizeCallback === "function")
+                windowResizeCallback(window.innerWidth, window.innerHeight);
+        }, false);
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,6 +425,51 @@ Graphics.prototype = {
         //Trigger resize callbacks
         this.triggerResizeEvents();
     },
+
+    /*
+        Graphics : availableArea - Get the available area on the current window
+        30/08/2016
+
+        @return Vec2 - Returns a Vec2 object containing the available window area
+
+        Example:
+
+        //Get the total dimensions of the window
+        var available = Graphics.availableArea;
+    */
+    get availableArea() {
+        return new Vec2(window.innerWidth, window.innerHeight);
+    },
+
+    /*
+        Graphics : availableWidth - Get the available width on the current window
+        30/08/2016
+
+        @return number - Returns a number containing the total available width
+
+        Example:
+
+        //Get the width of the window
+        var availableWidth = Graphics.availableWidth;
+    */
+    get availableWidth() {
+        return window.innerWidth;
+    },
+
+    /*
+        Graphics : availableHeight - Get the available height on the current window
+        30/08/2016
+
+        Return number - Returns a number containing the total available height
+
+        Example:
+
+        //Get the height of the window
+        var availableHeight = Graphics.availableHeight;
+    */
+    get availableHeight() {
+        return window.innerHeight;
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
