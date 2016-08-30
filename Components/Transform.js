@@ -192,7 +192,7 @@ Transform.prototype = {
     */
     set localRotation(pRot) {
         //Copy the rotation value
-        this.__Internal__Dont__Modify__.rot = pRot;
+        this.__Internal__Dont__Modify__.rot = cleanRotation(pRot);
 
         //Flag transforms as invalid
         this.invalidTransforms = true;
@@ -332,7 +332,7 @@ Transform.prototype = {
         this.__Internal__Dont__Modify__.pos = new Vec2(pMat.data[2][0], pMat.data[2][1]);
 
         //Get the rotation values
-        this.__Internal__Dont__Modify__.rot = Math.atan2(pMat.data[0][1], pMat.data[1][1]) * 180 / Math.PI;
+        this.__Internal__Dont__Modify__.rot = cleanRotation(Math.atan2(pMat.data[0][1], pMat.data[1][1]) * 180 / Math.PI);
 
         //Get the scale values
         this.__Internal__Dont__Modify__.scale = new Vec2(
@@ -496,7 +496,7 @@ Transform.prototype = {
         var playerGLobalRot = playerTransform.rotation;
     */
     get rotation() {
-        return Math.atan2(this.__Internal__Dont__Modify__.glbMat.data[0][1], this.__Internal__Dont__Modify__.glbMat.data[1][1]) * 180 / Math.PI;
+        return cleanRotation(Math.atan2(this.__Internal__Dont__Modify__.glbMat.data[0][1], this.__Internal__Dont__Modify__.glbMat.data[1][1]) * 180 / Math.PI);
     },
 
     /*
@@ -520,7 +520,7 @@ Transform.prototype = {
             tempMat = this.__Internal__Dont__Modify__.parent.__Internal__Dont__Modify__.glbMat.inversed.multiSet(tempMat);
 
             //Extract the rotation values
-            this.__Internal__Dont__Modify__.rot = Math.atan2(tempMat.data[0][1], tempMat.data[1][1]) * 180 / Math.PI;
+            this.__Internal__Dont__Modify__.rot = cleanRotation(Math.atan2(tempMat.data[0][1], tempMat.data[1][1]) * 180 / Math.PI);
         }
 
         //Otherwise set local rotation
@@ -960,4 +960,31 @@ Transform.prototype.transformPoint = function(pVec) {
 */
 Transform.prototype.inverseTransformPoint = function(pVec) {
     return this.__Internal__Dont__Modify__.glbMat.inversed.multiVec(pVec);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Helper Functions                                             ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    cleanRotation - Given any degree rotation bring it back to the 0 - 359 range
+    30/08/2016
+
+    @param[in] pRot - The rotation value to clean
+
+    @return number - Returns the value of pRot bound to 0 - 359
+
+    Example:
+
+    //Get a random rotation
+    var randRot = cleanRotation(Math.random() * 2000);
+*/
+function cleanRotation(pRot) {
+    //If the rotation value is into the negatives 
+    if (pRot < 0) return (360 + pRot % 360);
+
+    //Otherwise simple modulus calculation
+    else return pRot % 360;
 };

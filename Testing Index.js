@@ -50,6 +50,7 @@ var spawnBounds = new Vec2(graphics.width * 15, graphics.height * 15);
 var objects = [];
 for (var i = 0; i < 1000; i++) {
     objects[i] = {
+        aniTimer: Math.random() * 10,
         transform: new Transform(),
         shapes: [createPrimitiveShape(Math.floor(Math.random() * 3), Math.random() * 90 + 10),
             createPrimitiveShape(Math.floor(Math.random() * 3), Math.random() * 90 + 10)
@@ -66,8 +67,10 @@ for (var i = 0; i < 1000; i++) {
     objects[i].transform.parent = rootNode;
 
     //Generate a random fill color
-    for (var j = 0; j < objects[i].shapes.length; j++)
+    for (var j = 0; j < objects[i].shapes.length; j++) {
         objects[i].shapes[j].fillColor = new Color().randomize();
+        objects[i].shapes[j].outlineColor = new Color().randomize();
+    }
 }
 
 //Create the camera
@@ -107,8 +110,11 @@ function gameLoop(pDelta) {
 
     //Draw all objects
     for (var i = 0; i < objects.length; i++) {
+        //Add onto the animation timer
+        objects[i].aniTimer += pDelta;
+
         //Get the shape to render
-        var merged = objects[i].shapes[0].morph(objects[i].shapes[1], (Math.sin(Date.now() * 0.001) + 1) / 2);
+        var merged = objects[i].shapes[0].morph(objects[i].shapes[1], (Math.sin(objects[i].aniTimer) + 1) / 2);
 
         //Render the shape
         merged.draw(graphics.draw, projView.multi(objects[i].transform.globalMatrix));
