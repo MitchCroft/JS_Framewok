@@ -23,12 +23,15 @@
     Transform : Constructor - Initialise with default values
     08/08/2016
 
+    @param[in] pOwner - A reference to the owner of the current Transform
+                        (Default null)
+
     Example:
 
     //Create a new transform
     var playerTransform = new Transform();
 */
-function Transform() {
+function Transform(pOwner) {
     /*  WARNING:
         Don't modify this internal object from the outside of the transform.
         Instead use Transform properties and functions to modify these values
@@ -36,6 +39,7 @@ function Transform() {
         correct.
     */
     this.__Internal__Dont__Modify__ = {
+        owner: (typeof pOwner !== "undefined" ? pOwner : null),
         pos: new Vec2(),
         rot: 0,
         scale: new Vec2(1),
@@ -56,6 +60,30 @@ function Transform() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Transform.prototype = {
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                                General Properties                                          ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+        Transform : owner - Returns the owner of the Transform that was set when the
+                            Transform was created
+        31/08/2016
+
+        @return - Returns the value that was set in the constructor. This value can be anything
+                  and is not gaurenteed to be anything specific. If nothing was set this returns 
+                  null
+
+        Example:
+
+        //Get the owner of the transform
+        var obj = playerTransform.owner;
+    */
+    get owner() {
+        return this.__Internal__Dont__Modify__.owner;
+    },
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////                                                                                                            ////
     /////                                               Local Space Properties                                       ////
