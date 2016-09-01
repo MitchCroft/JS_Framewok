@@ -822,6 +822,8 @@ Transform.prototype = {
     @param[in] pForce - Flags if the transform update should be forced 
     @param[in] pRecurse - Flags if the transform update should recurse into the children transforms
 
+    @return bool - Returns true if the Transform values where forced to update
+
     Example:
 
     //Update the root transform before draw
@@ -861,6 +863,9 @@ Transform.prototype.updateTransforms = function(pForce, pRecurse) {
 
     //Reset the invalid transforms flag
     this.invalidTransforms = false;
+
+    //Return the forcced flag
+    return pForce;
 };
 
 /*
