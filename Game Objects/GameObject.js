@@ -287,6 +287,7 @@ GameObject.prototype.getComponentsWithID = function(pID) {
     01/09/2016
 
     @param[in] pID - The ID of the comonent type to find
+    @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
 
     @return Component - Returns the first component found with the specified ID or null if not found
 
@@ -295,7 +296,13 @@ GameObject.prototype.getComponentsWithID = function(pID) {
     //Get any component in the matrix chain with an ID of 0
     var comp = GameObject.getComponentWithIDInChildren(0);
 */
-GameObject.prototype.getComponentWithIDInChildren = function(pID) {
+GameObject.prototype.getComponentWithIDInChildren = function(pID, pSearchDisabled) {
+    //Clean search flag
+    if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
+
+    //Check the search flag against state
+    if (!pSearchDisabled && !this.__Internal__Dont__Modify__.enabled) return null;
+
     //Check there are components to look through
     if (this.__Internal__Dont__Modify__.components.length) {
         //Ensure the ID is within the bounds of the contained components
@@ -316,7 +323,7 @@ GameObject.prototype.getComponentWithIDInChildren = function(pID) {
     var found = null;
     for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the search found a component
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentWithIDInChildren(pID)) !== null)
+        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentWithIDInChildren(pID, pSearchDisabled)) !== null)
             return found;
     }
 
@@ -330,6 +337,7 @@ GameObject.prototype.getComponentWithIDInChildren = function(pID) {
     01/09/2016
 
     @param[in] pID - The ID of the components type to find
+    @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
 
     @return Component Array - Returns an array of all the components with the specified ID throughout
                               this Game Object and its children or null if not found
@@ -343,7 +351,13 @@ GameObject.prototype.getComponentWithIDInChildren = function(pID) {
         //TODO: Use components in some way
     }
 */
-GameObject.prototype.getComponentsWithIDInChildren = function(pID) {
+GameObject.prototype.getComponentsWithIDInChildren = function(pID, pSearchDisabled) {
+    //Clean search flag
+    if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
+
+    //Check the search flag against state
+    if (!pSearchDisabled && !this.__Internal__Dont__Modify__.enabled) return null;
+
     //Create a container for the found components
     var comps = null;
 
@@ -379,7 +393,7 @@ GameObject.prototype.getComponentsWithIDInChildren = function(pID) {
     var found = null;
     for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the search found a component
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentsWithIDInChildren(pID)) !== null) {
+        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentsWithIDInChildren(pID, pSearchDisabled)) !== null) {
             //Check if the component array needs creating
             if (comps === null) comps = [];
 
@@ -551,7 +565,7 @@ GameObject.prototype.removeComponentsWithID = function(pID) {
     @param[in] pTag - The tag of the Game Object to find
     @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
 
-    @return GameObject - Returns the found GameObejct or null if not found
+    @return GameObject - Returns the found Game Object or null if not found
 
     Example:
 
@@ -588,7 +602,7 @@ GameObject.prototype.findObjectWithTag = function(pTag, pSearchDisabled) {
 
     Example:
 
-    //Find all the gun obejcts on the player
+    //Find all the gun objects on the player
     var guns = playerObject.findObjectsWithTag("gun");
 
     //Do something with all gun objects
@@ -613,8 +627,103 @@ GameObject.prototype.findObjectsWithTag = function(pTag, pSearchDisabled) {
             //Create the array as needed
             if (objs === null) objs = [];
 
-            //Add the obejct to the array
+            //Add the object to the array
             objs.push(this.transform.__Internal__Dont__Modify__.children[i].owner);
+        }
+    }
+
+    //Return the array
+    return objs;
+};
+
+/*
+    GameObject : findObjectWithTagInChildren - Gets a reference to the first Game Object with the specified tag
+                                               recursivly through the children
+    03/09/2016
+
+    @param[in] pTag - The tag of the Game Object to find
+    @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
+
+    @return GameObject - Returns the found Game Object or null if not found
+
+    Example:
+
+    //Find the gun object in the players hierarchy
+    var gun = playerObject.findObjectWithTagInChildren("gun");
+*/
+GameObject.prototype.findObjectWithTagInChildren = function(pTag, pSearchDisabled) {
+    //Clean search flag
+    if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
+
+    //Look through children
+    var found = null;
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+        //Check if Game Object is disabled
+        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+
+        //Check the objects tag
+        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag)
+            return this.transform.__Internal__Dont__Modify__.children[i].owner;
+
+        //Recurse into the child
+        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.findObjectWithTagInChildren(pTag, pSearchDisabled)) !== null)
+            return found;
+    }
+
+    //Default return null
+    return null;
+};
+
+/*
+    GameObject : findObjectsWithTagInChildren - Gets an array of Game Objects with the specified tag recirsivly
+                                                through the children
+    03/09/2016
+
+    @param[in] pTag - The tag of the Game Obejcts to find
+    @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
+
+    @return GameObject Array - Returns an Array of Game Obejcts with the specified tag or
+                               null if not found
+
+    Example:
+
+    //Find all the gun objects in the players hierarchy
+    var guns = playerObject.findObjectsWithTagInChildren("gun");
+
+    //Do something with all gun objects
+    for (var i = guns.length - 1; i >= 0; i--) {
+        //...
+    }
+*/
+GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabled) {
+    //Clean search flag
+    if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
+
+    //Create an array to store the objects
+    var objs = null;
+
+    //Look through the children
+    var found = null;
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+        //Check if the object is disabled
+        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+
+        //Check the objects tag
+        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag) {
+            //Create the array as needed
+            if (objs === null) objs = [];
+
+            //Add the object to the array
+            objs.push(this.transform.__Internal__Dont__Modify__.children[i].owner);
+        }
+
+        //Recurse into the children
+        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.findObjectsWithTagInChildren(pTag, pSearchDisabled)) !== null) {
+            //Create the array as needed
+            if (objs === null) objs = [];
+
+            //Add the objects to the array
+            objs = objs.concat(found);
         }
     }
 
@@ -721,3 +830,54 @@ GameObject.prototype.drawComponents = function(pCtx) {
     };
 */
 GameObject.prototype.start = null;
+
+/*
+    GameObject : update - An empty function which can be filled to allow the Game Object
+                          to update itself every cycle
+    03/09/2016
+
+    @param[in] number - If function is defined a number will be passed into the function that 
+                        contains the delta time for the current cycle
+
+    Example:
+
+    //Set the update of the custom object
+    CustomObject.prototype.update = function(pDelta) {
+        //Move the object in the world
+    };
+*/
+GameObject.prototype.update = null;
+
+/*
+    GameObject : lateUpdate - An empty function which can be filled to allow the Game Object
+                              to preform additional update logic after the main update
+    03/09/2016
+
+    @param[in] number - If function is defined a number will be passed into the function that 
+                        contains the delta time for the current cycle
+
+    Example:
+
+    //Set the late update of the custom object
+    CustomObject.prototype.lateUpdate = function(pDelta) {
+        //React to the players actions
+    };
+*/
+GameObject.prototype.lateUpdate = null;
+
+/*
+    GameObject : onTrigger - An empty function which can be filled to allow the Game Object
+                             to preform actions when the current Game Object is set to be a 
+                             physics trigger and a physics object enters its bounds
+    03/09/2016
+
+    @param[in] GameObject - Passes in the object that is contained in the trigger area
+
+    Example:
+
+    //Set the on trigger of the custom object
+    CustomObject.prototype.onTrigger = function(pObject) {
+        //Check if player object and react accordingly
+    };
+*/
+GameObject.prototype.onTrigger = null;

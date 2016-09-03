@@ -118,7 +118,7 @@ ComponentBase.prototype = {
     31/08/2016
 
     @param[in] number - If function is defined a number will be passed into the function that 
-                       contains the delta time for the current cycle
+                        contains the delta time for the current cycle
 
     Example:
 
