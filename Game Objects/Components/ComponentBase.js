@@ -42,7 +42,7 @@
     @param[in] pID - A unique ID number given to different types of components
                      to enable searches through Game object lists. User defined
                      components should be greater than or equal to 0. Use unique 
-                     identifiers otherwise the wrong obejcts may be found in searches
+                     identifiers otherwise the wrong objects may be found in searches
 */
 function ComponentBase(pID) {
     //Enfore abstract nature of the ComponentBase
@@ -53,6 +53,9 @@ function ComponentBase(pID) {
 
     //Flags if the component is currently active
     this.enabled = true;
+
+    //Store the local space bounds of the Component
+    this.bounds = new Bounds();
 
     /*  WARNING:
         Don't modify this internal object from the outside of the Component Base.
@@ -129,6 +132,31 @@ ComponentBase.prototype = {
     };
 */
 ComponentBase.prototype.update = null;
+
+/*
+    ComponentBase : updateBounds - An empty update bounds function which can be filled to allow
+                                   for components to update their bounds
+    10/09/2016
+
+    @return bool - Defined functions should return a bool value indicating if the bounds have
+                   been updated
+
+    Example:
+
+    //Update the bounds of the component
+    SquareComponent.prototype.updateBounds = function() {
+        //Update the bounds values
+        this.bounds.min.set(this.min);
+        this.bounds.max.set(this.max);
+
+        //Clean the bounds (Math.sin bounces between -1 and 1. Bounds min must always be the smallest)
+        this.bounds.clean();
+
+        //Return values updated
+        return true;
+    };
+*/
+ComponentBase.prototype.updateBounds = null;
 
 /*
     ComponentBase : draw - An empty draw function which can be filled to allow for components

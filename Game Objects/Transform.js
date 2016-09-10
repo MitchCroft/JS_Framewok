@@ -9,10 +9,10 @@
  *      Author: Mitchell Croft
  *      Date: 08/08/2016
  *
+ *      Version: 1.0
+ *
  *      Requires:
  *      Mat3.js
- *
- *      Version: 1.0
  *
  *      Purpose:
  *      Provide a method for creating a hierarchal standing between

@@ -12,7 +12,7 @@
  *      Version: 1.0
  *
  *      Requires: 
- *      Transform.js, ComponentBase.js
+ *      Transform.js, Bounds.js, ComponentBase.js
  *      
  *      Purpose:
  *      Provide a base point for game objects to inherit from 
@@ -53,6 +53,7 @@ function GameObject(pTag) {
 
     //Create a transform for the object
     this.transform = new Transform(this);
+    this.transform.invalidTransforms = true;
 
     /*  WARNING:
         Don't modify this internal object from the outside of the Game Object.
@@ -63,6 +64,10 @@ function GameObject(pTag) {
         enabled: true,
         initialised: false,
         components: [],
+
+        forceBoundsUpdate: false,
+        lclBounds: new Bounds(),
+        glbBounds: null
     };
 };
 
@@ -138,6 +143,13 @@ GameObject.prototype.addComponent = function(pComp) {
 
     //Ensure that the owner is not the current object
     if (pComp.owner === this) return false;
+
+    //Otherwise if the component has a previous owner
+    else if (pComp.owner !== null) {
+        //Attempt removal of component
+        if (!pComp.owner.removeComponent(pComp))
+            return false;
+    }
 
     //Set the owner of the component
     pComp.__Internal__Dont__Modify__.owner = this;
@@ -756,6 +768,13 @@ GameObject.prototype.updateComponents = function(pDelta) {
             //Ensure that update function has been set
             if (this.__Internal__Dont__Modify__.components[i].update !== null)
                 this.__Internal__Dont__Modify__.components[i].update(pDelta);
+
+            //Ensure that update bounds function has been set
+            if (this.__Internal__Dont__Modify__.components[i].updateBounds !== null) {
+                //Check if the bounds where updated
+                if (this.__Internal__Dont__Modify__[i].updateBounds())
+                    this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
+            }
         }
     }
 
@@ -775,8 +794,22 @@ GameObject.prototype.updateTransforms = function() {
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
     //Update the current transform
-    if (this.transform.updateTransforms()) {
-        //TODO: Update the bounding object of the current Game Object
+    if (this.transform.updateTransforms(null, false) || this.__Internal__Dont__Modify__.forceBoundsUpdate) {
+        //If components were updated, re-calculate local bounds
+        if (this.__Internal__Dont__Modify__.forceBoundsUpdate) {
+            //Reset the local bounds
+            this.__Internal__Dont__Modify__.lclBounds = new Bounds();
+
+            //Loop through and encapsulate all components
+            for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--)
+                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.components[i].bounds);
+
+            //Reset the force update flag
+            this.__Internal__Dont__Modify__.forceBoundsUpdate = false;
+        }
+
+        //Set the global bounds of the game object
+        this.__Internal__Dont__Modify__.glbBounds = this.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(this.transform.globalMatrix);
     }
 
     //Recurse into the children objects
