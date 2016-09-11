@@ -65,7 +65,7 @@ function GameObject(pTag) {
         initialised: false,
         components: [],
 
-        forceBoundsUpdate: false,
+        forceBoundsUpdate: true,
         lclBounds: new Bounds(),
         glbBounds: null
     };
@@ -788,21 +788,42 @@ GameObject.prototype.updateComponents = function(pDelta) {
                                     This is called by the scene management and shouldn't be explicitly
                                     called elsewhere.
     01/09/2016
+
+    @return bool - Returns true if the GameObject's transform or components where updated
 */
 GameObject.prototype.updateTransforms = function() {
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
+    //Flag if the transform was updated
+    var transformUpdated = false;
+
     //Update the current transform
-    if (this.transform.updateTransforms(null, false) || this.__Internal__Dont__Modify__.forceBoundsUpdate) {
-        //If components were updated, re-calculate local bounds
+    if (this.transform.updateTransforms(null, false))
+        transformUpdated = true;
+
+    //Recurse into the children objects
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+        //Test if the child objects have update position or component bounds
+        if (this.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms())
+            this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
+    }
+
+    //Check if bounds needs to be updated
+    if (transformUpdated || this.__Internal__Dont__Modify__.forceBoundsUpdate) {
+        //Check if the local bounds need updating
         if (this.__Internal__Dont__Modify__.forceBoundsUpdate) {
             //Reset the local bounds
             this.__Internal__Dont__Modify__.lclBounds = new Bounds();
 
-            //Loop through and encapsulate all components
+            //Encapsulate the Game Objects components 
             for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--)
-                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.components[i].bounds);
+                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.components[i].lclBounds);
+
+            //Loop through and encapsulate the childrens bounds
+            for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(
+                    this.transform.localMatrix.multi(this.transform.__Internal__Dont__Modify__.children[i].localMatrix)));
 
             //Reset the force update flag
             this.__Internal__Dont__Modify__.forceBoundsUpdate = false;
@@ -810,11 +831,13 @@ GameObject.prototype.updateTransforms = function() {
 
         //Set the global bounds of the game object
         this.__Internal__Dont__Modify__.glbBounds = this.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(this.transform.globalMatrix);
+
+        //Return bounds updated
+        return true;
     }
 
-    //Recurse into the children objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms();
+    //Default return false
+    return false;
 };
 
 /*

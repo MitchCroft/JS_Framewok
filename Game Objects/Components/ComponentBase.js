@@ -55,7 +55,7 @@ function ComponentBase(pID) {
     this.enabled = true;
 
     //Store the local space bounds of the Component
-    this.bounds = new Bounds();
+    this.lclBounds = new Bounds();
 
     /*  WARNING:
         Don't modify this internal object from the outside of the Component Base.
@@ -146,11 +146,11 @@ ComponentBase.prototype.update = null;
     //Update the bounds of the component
     SquareComponent.prototype.updateBounds = function() {
         //Update the bounds values
-        this.bounds.min.set(this.min);
-        this.bounds.max.set(this.max);
+        this.lclBounds.min.set(this.min);
+        this.lclBounds.max.set(this.max);
 
         //Clean the bounds (Math.sin bounces between -1 and 1. Bounds min must always be the smallest)
-        this.bounds.clean();
+        this.lclBounds.clean();
 
         //Return values updated
         return true;
