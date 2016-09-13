@@ -175,3 +175,17 @@ ComponentBase.prototype.updateBounds = null;
     };
 */
 ComponentBase.prototype.draw = null;
+
+/*
+    ComponentBase : dispose - An empty dispose function which can be filled to allow for components
+                              to dispose of data and memory as required by the component
+    13/09/2016
+
+    Example:
+
+    //Clear memory 
+    SquareComponent.prototype.dispose = function() {
+        //Clear additional point values
+    };
+*/
+ComponentBase.prototype.dispose = null;

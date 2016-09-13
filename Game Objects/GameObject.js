@@ -867,6 +867,28 @@ GameObject.prototype.drawComponents = function(pCtx) {
         this.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx);
 };
 
+/*
+    GameObject : dispose - Recurse down and dispose of child Game Objects and components to clear
+                           requried data
+    13/09/2016
+*/
+GameObject.prototype.dispose = function() {
+    //Recurse down into child Game Objects
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.transform.__Internal__Dont__Modify__.children[i].owner.dispose();
+
+    //Call components dispose functions
+    for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
+        //Check if function ahs been set
+        if (this.__Internal__Dont__Modify__.components[i] !== null)
+            this.__Internal__Dont__Modify__.components[i].dispose();
+    }
+
+    //Call this objects on destroy function
+    if (this.onDestroy !== null)
+        this.onDestroy();
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
 /////                                        Customisable Called Functions                                       ////
@@ -937,3 +959,18 @@ GameObject.prototype.lateUpdate = null;
     };
 */
 GameObject.prototype.onTrigger = null;
+
+/*
+    GameObject : onDestroy - An empty function which can be filled to allow the Game Object
+                             to preform any actions required at the end of the Game Objects
+                             life
+    13/09/2016
+
+    Example:
+
+    //Set the on destroy of the custom object
+    CustomObject.prototype.onDestroy = function() {
+        //Increase player score, Spawn additional enemies etc.
+    };
+*/
+GameObject.prototype.onDestroy = null;

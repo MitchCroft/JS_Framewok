@@ -26,7 +26,7 @@
                            viewport dimensions on the supplied canvas
     28/08/2016
 
-    @param[in/out] pCanvas - The canvas object to use for scaling the camera view
+    @param[in] pCanvas - The canvas object to use for scaling the camera view
     @param[in] pViewWidth - The width of the cameras view (World Units)
     @param[in] pViewHeight - The height of the cameras view (World Units)
     @param[in] pDistance - Scales the drawn elements to give the appearance
