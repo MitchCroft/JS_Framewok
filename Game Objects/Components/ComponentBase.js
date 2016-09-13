@@ -164,11 +164,13 @@ ComponentBase.prototype.updateBounds = null;
     31/08/2016
 
     @param[in] context - The 2D context object to be used for rendering
+    @param[in] projection world view - The projection world view Mat3 object for the viewing camera
+                                       and the parent game object
 
     Example:
 
     //Render the square to the context
-    SquareComponent.prototype.draw = function(pCtx) {
+    SquareComponent.prototype.draw = function(pCtx, pProjWorldView) {
         //Set the fill color
         pCtx.fillStyle = "white";
         pCtx.fillRect(this.min.x, this.min.y, this.max.x - this.min.x, this.max.y - this.max.y);

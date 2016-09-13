@@ -750,6 +750,66 @@ GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabl
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+    GameObject : internalUpdate - Goes down the hierarchy chain updating the Game Objects. This is
+                                  called by the scene management and shouldn't be explicitly called
+                                  elsewhere.
+    13/09/2016
+
+    @param[in] pDelta - The delta time for the current cycle
+*/
+GameObject.prototype.internalUpdate = function(pDelta) {
+    //Check if this Game Object is still active
+    if (!this.__Internal__Dont__Modify__.enabled) return;
+
+    //Check if this object has been initialised
+    if (!this.__Internal__Dont__Modify__.initialised) {
+        //Check if a start function has been set
+        if (this.start !== null)
+            this.start();
+
+        //Flag as initialised
+        this.__Internal__Dont__Modify__.initialised = true;
+    }
+
+    //Call this objects update function
+    if (this.update !== null) this.update(pDelta);
+
+    //Recurse into children
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.transform.__Internal__Dont__Modify__.children[i].owner.internalUpdate(pDelta);
+};
+
+/*
+    GameObject : internalLateUpdate - Goes down the hierarchy chain updating the Game Objects. This is
+                                      called by the scene management and shouldn't be explicitly called
+                                      elsewhere.
+    13/09/2016
+
+    @param[in] pDelta - The delta time for the current cycle
+*/
+GameObject.prototype.internalLateUpdate = function(pDelta) {
+    //Check if this Game Object is still active
+    if (!this.__Internal__Dont__Modify__.enabled) return;
+
+    //Check if this object has been initialised
+    if (!this.__Internal__Dont__Modify__.initialised) {
+        //Check if a start function has been set
+        if (this.start !== null)
+            this.start();
+
+        //Flag as initialised
+        this.__Internal__Dont__Modify__.initialised = true;
+    }
+
+    //Call this objects update function
+    if (this.lateUpdate !== null) this.lateUpdate(pDelta);
+
+    //Recurse into children
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.transform.__Internal__Dont__Modify__.children[i].owner.internalLateUpdate(pDelta);
+};
+
+/*
     GameObject : updateComponents - Goes down the hierarchy chain updating Game Objects components.
                                     This is called by the scene management and shouldn't be explicitly
                                     called elsewhere.
@@ -847,10 +907,20 @@ GameObject.prototype.updateTransforms = function() {
     01/09/2016
 
     @param[in] pCtx - The 2D context object to be used for rendering
+    @param[in] pProjView - The projection view matrix from the rendering Camera
 */
-GameObject.prototype.drawComponents = function(pCtx) {
+GameObject.prototype.drawComponents = function(pCtx, pProjView) {
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
+
+    //Recurse into the children objects
+    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx, pProjView);
+
+    //Store the projection world view matrix
+    var projectionWorldView = null;
+    if (this.__Internal__Dont__Modify__.components.length)
+        projectionWorldView = pProjView.multi(this.transform.globalMatrix);
 
     //Update the current components within the Game Object
     for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
@@ -858,13 +928,9 @@ GameObject.prototype.drawComponents = function(pCtx) {
         if (this.__Internal__Dont__Modify__.components[i].enabled) {
             //Ensure that update function has been set
             if (this.__Internal__Dont__Modify__.components[i].draw !== null)
-                this.__Internal__Dont__Modify__.components[i].draw(pCtx);
+                this.__Internal__Dont__Modify__.components[i].draw(pCtx, projectionWorldView);
         }
     }
-
-    //Recurse into the children objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx);
 };
 
 /*

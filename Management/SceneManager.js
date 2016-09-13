@@ -115,10 +115,8 @@ var SceneManager = new function() {
             if (camera === null) throw new Error("Can not render scene's, Camera object has not been set");
         }
 
-        //Update and render the scene
-        else {
-            //TODO: Rendering / updating
-        }
+        //Update the current scene
+        else activeScene.update(pDelta, graphics, camera);
     };
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +228,29 @@ var SceneManager = new function() {
         //TODO
     */
     this.addScene = function(pScene, pIdent) {
-        //TODO
+        //Check the scene is valid
+        if (typeof pScene !== "function")
+            throw new Error("The passed in Scene type " + pScene + " (Type '" + typeof pScene + "') is not an object base type. Please use an object type that inherits from SceneBase");
+
+        //Clean the identifier
+        pIdent = (typeof pIdent === "string" ? pIdent : "" + sceneMap.length);
+
+        //Check if identifier is already in use
+        if (pIdent in namedIndicies)
+            throw new Error("Could not add new Scene to the Scene Manager with the identifier " + pIdent + " as there is already a Scene using this identifier");
+
+        //Create a new object of pScene to test inheritance chain
+        var testObj = new pScene();
+
+        //Test prototype
+        if (!SceneBase.isPrototypeOf(testObj))
+            throw new Error("Could not add new Scene " + pScene + "(Type '" + typeof pScene + "') as it does not inherit from BaseScene. Please inherit from BaseScene as the base for the custom scene");
+
+        //Add the scene function to the map
+        sceneMap[sceneMap.length] = pScene;
+
+        //Assign the identifier index value
+        namedIndicies[pIdent] = sceneMap.length - 1;
     };
 
     /*
@@ -249,7 +269,26 @@ var SceneManager = new function() {
         SceneManager.setActiveScene("Start");
     */
     this.setActiveScene = function(pIdent) {
-        //TODO
+        //Check there are scenes to load
+        if (!sceneMap.length)
+            throw new Error("No Scene's have been added to the Manager. Can not load Scene " + pIdent + ". Add Scene types using SceneManager.addScene before setting an active scene");
+
+        //Clean the identifier
+        var identifier = validifySceneIdentifier(pIdent, -1);
+
+        //Check the return index
+        if (pIdent < 0)
+            throw new Error("Unable to load the Scene with identifier " + pIdent + " (Type '" + typeof pIdent + "'). Enter a valid index or string identifier.");
+
+        //If there is a previous active scene, dispose of it
+        if (activeScene !== null) activeScene.dispose();
+
+        //Create the new Active Scene
+        activeScene = new sceneMap[identifier]();
+
+        //Call the startup function
+        if (activeScene.startUp !== null)
+            activeScene.startUp();
     };
 };
 
@@ -295,8 +334,41 @@ function SceneBase() {
     13/09/2016
 
     @param[in] pDelta - The delta time for the current cycle
-    @param[in] pGraphics
+    @param[in] pGraphics - The Graphics object being used to render the scene
+    @param[in] pCamera - The Camera object being used to render the scene
 */
+SceneBase.prototype.update = function(pDelta, pGraphics, pCamera) {
+    //Loop through the internal root level nodes to preform updates
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].internalUpdate(pDelta);
+
+    //Loop through the internal root level nodes to preform late updates
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].internalLateUpdate(pDelta);
+
+    //Loop through the internal root level nodes to preform component updates
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].updateComponents(pDelta);
+
+    //Loop through the internal root level nodes to preform positional updates
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].updateTransforms();
+
+    //TODO: Preform physics calculations
+
+    //TODO: Update spacial partition
+
+    //TODO: Find visible objects and render only those
+
+    //TEMP
+    //Get the projection view from the camera
+    var projView = pCamera.projectionView;
+
+    //Loop through internal root level nodes to draw components
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].drawComponents(pGraphics.draw, projView);
+    //TEMP
+};
 
 /*
     SceneBase : Destroy - Destroy all of the contained Game Objects
