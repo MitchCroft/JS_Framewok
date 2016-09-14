@@ -218,7 +218,7 @@ GameObject.prototype.createComponent = function(pType) {
     //Get the component with an ID of 0
     var comp = GameObject.getComponentWithID(0);
 */
-Gameobject.prototype.getComponentWithID = function(pID) {
+GameObject.prototype.getComponentWithID = function(pID) {
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return null;
 
@@ -691,10 +691,10 @@ GameObject.prototype.findObjectWithTagInChildren = function(pTag, pSearchDisable
                                                 through the children
     03/09/2016
 
-    @param[in] pTag - The tag of the Game Obejcts to find
+    @param[in] pTag - The tag of the Game Objects to find
     @param[in] pSearchDisabled - Flags if disabled Game Objects should be searched through (Default false)
 
-    @return GameObject Array - Returns an Array of Game Obejcts with the specified tag or
+    @return GameObject Array - Returns an Array of Game Objects with the specified tag or
                                null if not found
 
     Example:

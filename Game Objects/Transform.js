@@ -23,15 +23,12 @@
     Transform : Constructor - Initialise with default values
     08/08/2016
 
-    @param[in] pOwner - A reference to the owner of the current Transform
-                        (Default null)
-
     Example:
 
     //Create a new transform
     var playerTransform = new Transform();
 */
-function Transform(pOwner) {
+function Transform() {
     /*  WARNING:
         Don't modify this internal object from the outside of the transform.
         Instead use Transform properties and functions to modify these values
@@ -39,7 +36,7 @@ function Transform(pOwner) {
         correct.
     */
     this.__Internal__Dont__Modify__ = {
-        owner: (typeof pOwner !== "undefined" ? pOwner : null),
+        owner: null,
         pos: new Vec2(),
         rot: 0,
         scale: new Vec2(1),
@@ -796,7 +793,8 @@ Transform.prototype = {
         Transform : parent - Set the parent Transform of the current object
         08/08/2016
 
-        @param[in] pTrans - The Transform object to set as the currents parent
+        @param[in] pTrans - The Transform object to set as the currents parent 
+                            or null to remove the parent
 
         Example:
 
@@ -804,8 +802,12 @@ Transform.prototype = {
         weaponTransform.parent = player.Transform;
     */
     set parent(pTrans) {
-        //Add the current as a child of the transform
-        pTrans.addChild(this);
+        //Check if the parameter is a Transform object
+        if (pTrans instanceof Transform) pTrans.addChild(this);
+
+        //Otherwise remove the parent from this transform
+        else if (this.__Internal__Dont__Modify__.parent !== null)
+            this.__Internal__Dont__Modify__.parent.removeChild(this);
     },
 };
 
