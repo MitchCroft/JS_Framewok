@@ -336,7 +336,7 @@ SceneManager.prototype.update = function(pDelta) {
  *          //Call the Scene Base constructor for intitial setup
  *          SceneBase.call(this);
  *
- *          Note: Can add varying 'global' variables here that can
+ *          Note: Can add various 'global' variables here that can
  *                be shared by game objects in the scene
  *      };
  *
@@ -521,8 +521,19 @@ SceneBase.prototype.FindObjectsWithTag = function(pTag, pSearchDisabled) {
 */
 SceneBase.prototype.update = function(pDelta, pGraphics, pCamera) {
     //Loop through the internal root level nodes to preform updates
-    for (var i = this.objects.length - 1; i >= 0; i--)
-        this.objects[i].internalUpdate(pDelta);
+    for (var i = this.objects.length - 1; i >= 0; i--) {
+        //Check if the object should be destroyed
+        if (this.objects[i].__Internal__Dont__Modify__.destroy) {
+            //Dispose of the object
+            this.objects[i].dispose();
+
+            //Remove the object from the list
+            this.objects.splice(i, 1);
+        }
+
+        //Otherwise update this object
+        else this.objects[i].internalUpdate(pDelta);
+    }
 
     //Loop through the internal root level nodes to preform late updates
     for (var i = this.objects.length - 1; i >= 0; i--)

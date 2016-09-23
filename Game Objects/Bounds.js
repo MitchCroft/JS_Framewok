@@ -126,11 +126,8 @@ Bounds.prototype.getGlobalBounds = function(pTrans) {
     //Create a new Bounds object
     var globalBounds = new Bounds();
 
-    //Store the global transformed points 
-    var globalPoints = [pTrans.multiVec(this.min), pTrans.multiVec(this.max)];
-
     //Apply the points to the global bounds
-    globalBounds.points = globalPoints;
+    globalBounds.points = [pTrans.multiVec(this.min), pTrans.multiVec(this.max)];
 
     //Return the global bounds
     return globalBounds;

@@ -48,27 +48,29 @@ function GameObject(pTag) {
     //Enfore abstract nature of the GameObject
     if (this.constructor === GameObject) throw new Error("Can not instantiate the abstract Game Object. Create a seperate object which inherits from Game Object");
 
-    //Store a tag for the Game Object
-    this.tag = (typeof pTag === "string" ? pTag : "Game Object");
-
-    //Create a transform for the object
-    this.transform = new Transform(this);
-    this.transform.invalidTransforms = true;
-
     /*  WARNING:
         Don't modify this internal object from the outside of the Game Object.
         Instead use properties and functions to modify these values as this 
         allows for the internal information to update itself and keep it correct.
     */
     this.__Internal__Dont__Modify__ = {
+        tag: (typeof pTag === "string" ? pTag : "Game Object"),
+        transform: new Transform(this),
+
         enabled: true,
         initialised: false,
         components: [],
 
         forceBoundsUpdate: true,
         lclBounds: new Bounds(),
-        glbBounds: null
+        glbBounds: null,
+
+        destroy: false,
+        disposed: false
     };
+
+    //Force Transform to update in the first pass
+    this.__Internal__Dont__Modify__.transform.invalidTransforms = true;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +94,11 @@ GameObject.prototype = {
         }
     */
     get enabled() {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'get tag'");
+
+        //Return the enabled flag
         return this.__Internal__Dont__Modify__.enabled;
     },
 
@@ -109,12 +116,100 @@ GameObject.prototype = {
         wallObj.enabled = false;
     */
     set enabled(pState) {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'set tag'");
+
         //Set the current state
         this.__Internal__Dont__Modify__.enabled = pState;
 
         //Recurse into the children objects and set enabled states
-        for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-            this.transform.__Internal__Dont__Modify__.children[i].owner.enabled = pState;
+        for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+            this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.enabled = pState;
+    },
+
+    /*
+        GameObject : tag - Get the tag of the current Game Object
+        23/09/2016
+
+        @return string - Returns a string that is the tag for the Game Object
+
+        Example:
+
+        //Loop through a group of objects to find the player
+        for (var i = 0; i < objects.length; i++) {
+            if (objects[i].tag === "Player") {
+                //TODO: Use the player
+            }
+        }
+    */
+    get tag() {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'get tag'");
+
+        //Return the tag
+        return this.__Internal__Dont__Modify__.tag;
+    },
+
+    /*
+        GameObject : tag - Set the tag of the current Game Object
+        23/09/2016
+
+        @param[in] pTag - A string value representing the new tag for the Game Object
+
+        Example:
+
+        //Assign the 'Player' tag to the player object
+        playerObj.tag = "Player";
+    */
+    set tag(pTag) {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'set tag'");
+
+        //Assign if the passed in value is a string
+        if (typeof pTag === "string")
+            this.__Internal__Dont__Modify__.tag = pTag;
+    },
+
+    /*
+        GameObject : transform - Return the Transform object that belongs to the current
+                                 Game Object
+        23/09/2016
+
+        @return Transform - Returns a Transform object
+
+        Example:
+
+        //Get the players current position
+        var playerPos = playerObj.transform.position;
+    */
+    get transform() {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'get transform'");
+
+        //Return the Transform object
+        return this.__Internal__Dont__Modify__.transform;
+    },
+
+    /*
+        GameObject : disposed - Returns the disposal state of this Game Object
+        23/09/2016
+
+        @return bool - Returns true if the Game Object has been disposed of and
+                       is unusable
+
+        Example:
+
+        //Check if the Custom Object is useable before attempting
+        if (!customObj.disposed) {
+            //TODO: Do stuff
+        }
+    */
+    get disposed() {
+        return this.__Internal__Dont__Modify__.disposed;
     },
 };
 
@@ -138,6 +233,10 @@ GameObject.prototype = {
     GameObject.addComponent(new CustomComponent());
 */
 GameObject.prototype.addComponent = function(pComp) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'addComponent'");
+
     //Ensure the parameter is a component derivative
     if (!ComponentBase.isPrototypeOf(pComp)) return false;
 
@@ -180,6 +279,10 @@ GameObject.prototype.addComponent = function(pComp) {
     var comp = GameObject.createComponent("CustomComponent");
 */
 GameObject.prototype.createComponent = function(pType) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'createComponent'");
+
     //Evauluate the type of object to create
     var evaluatedType = eval(pType);
 
@@ -219,6 +322,10 @@ GameObject.prototype.createComponent = function(pType) {
     var comp = GameObject.getComponentWithID(0);
 */
 GameObject.prototype.getComponentWithID = function(pID) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'getComponentWithID'");
+
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return null;
 
@@ -258,6 +365,10 @@ GameObject.prototype.getComponentWithID = function(pID) {
     }
 */
 GameObject.prototype.getComponentsWithID = function(pID) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'getComponentsWithID'");
+
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return null;
 
@@ -309,6 +420,10 @@ GameObject.prototype.getComponentsWithID = function(pID) {
     var comp = GameObject.getComponentWithIDInChildren(0);
 */
 GameObject.prototype.getComponentWithIDInChildren = function(pID, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'getComponentWithIDInChildren'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
@@ -333,9 +448,9 @@ GameObject.prototype.getComponentWithIDInChildren = function(pID, pSearchDisable
 
     //Look through children
     var found = null;
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the search found a component
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentWithIDInChildren(pID, pSearchDisabled)) !== null)
+        if ((found = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.getComponentWithIDInChildren(pID, pSearchDisabled)) !== null)
             return found;
     }
 
@@ -364,6 +479,10 @@ GameObject.prototype.getComponentWithIDInChildren = function(pID, pSearchDisable
     }
 */
 GameObject.prototype.getComponentsWithIDInChildren = function(pID, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'getComponentsWithIDInChildren'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
@@ -403,9 +522,9 @@ GameObject.prototype.getComponentsWithIDInChildren = function(pID, pSearchDisabl
 
     //Look through the children
     var found = null;
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the search found a component
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.getComponentsWithIDInChildren(pID, pSearchDisabled)) !== null) {
+        if ((found = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.getComponentsWithIDInChildren(pID, pSearchDisabled)) !== null) {
             //Check if the component array needs creating
             if (comps === null) comps = [];
 
@@ -434,6 +553,10 @@ GameObject.prototype.getComponentsWithIDInChildren = function(pID, pSearchDisabl
     }
 */
 GameObject.prototype.removeComponent = function(pComp) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'removeComponent'");
+
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return false;
 
@@ -478,6 +601,10 @@ GameObject.prototype.removeComponent = function(pComp) {
     }
 */
 GameObject.prototype.removeComponentWithID = function(pID) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed.  Called function 'removeComponentWithID'");
+
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return null;
 
@@ -527,6 +654,10 @@ GameObject.prototype.removeComponentWithID = function(pID) {
     }
 */
 GameObject.prototype.removeComponentsWithID = function(pID) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'removeComponentsWithID'");
+
     //Ensure there are components to check for removal
     if (!this.__Internal__Dont__Modify__.components.length) return null;
 
@@ -585,17 +716,21 @@ GameObject.prototype.removeComponentsWithID = function(pID) {
     var gun = playerObject.findObjectWithTag("gun");
 */
 GameObject.prototype.findObjectWithTag = function(pTag, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'findObjectWithTag'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
     //Look through children
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if Game Object is disabled
-        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+        if (!pSearchDisabled && !this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
 
         //Check the objects tag
-        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag)
-            return this.transform.__Internal__Dont__Modify__.children[i].owner;
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.tag === pTag)
+            return this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner;
     }
 
     //Default return null
@@ -623,6 +758,10 @@ GameObject.prototype.findObjectWithTag = function(pTag, pSearchDisabled) {
     }
 */
 GameObject.prototype.findObjectsWithTag = function(pTag, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'findObjectsWithTag'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
@@ -630,17 +769,17 @@ GameObject.prototype.findObjectsWithTag = function(pTag, pSearchDisabled) {
     var objs = null;
 
     //Look through the children
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the object is disabled
-        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+        if (!pSearchDisabled && !this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
 
         //Check the objects tag
-        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag) {
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.tag === pTag) {
             //Create the array as needed
             if (objs === null) objs = [];
 
             //Add the object to the array
-            objs.push(this.transform.__Internal__Dont__Modify__.children[i].owner);
+            objs.push(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner);
         }
     }
 
@@ -664,21 +803,25 @@ GameObject.prototype.findObjectsWithTag = function(pTag, pSearchDisabled) {
     var gun = playerObject.findObjectWithTagInChildren("gun");
 */
 GameObject.prototype.findObjectWithTagInChildren = function(pTag, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'findObjectWithTagInChildren'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
     //Look through children
     var found = null;
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if Game Object is disabled
-        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+        if (!pSearchDisabled && !this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
 
         //Check the objects tag
-        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag)
-            return this.transform.__Internal__Dont__Modify__.children[i].owner;
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.tag === pTag)
+            return this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner;
 
         //Recurse into the child
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.findObjectWithTagInChildren(pTag, pSearchDisabled)) !== null)
+        if ((found = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.findObjectWithTagInChildren(pTag, pSearchDisabled)) !== null)
             return found;
     }
 
@@ -708,6 +851,10 @@ GameObject.prototype.findObjectWithTagInChildren = function(pTag, pSearchDisable
     }
 */
 GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabled) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'findObjectsWithTagInChildren'");
+
     //Clean search flag
     if (typeof pSearchDisabled !== "boolean") pSearchDisabled = false;
 
@@ -716,21 +863,21 @@ GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabl
 
     //Look through the children
     var found = null;
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Check if the object is disabled
-        if (!pSearchDisabled && !this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
+        if (!pSearchDisabled && !this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.enabled) continue;
 
         //Check the objects tag
-        if (this.transform.__Internal__Dont__Modify__.children[i].owner.tag === pTag) {
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.tag === pTag) {
             //Create the array as needed
             if (objs === null) objs = [];
 
             //Add the object to the array
-            objs.push(this.transform.__Internal__Dont__Modify__.children[i].owner);
+            objs.push(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner);
         }
 
         //Recurse into the children
-        if ((found = this.transform.__Internal__Dont__Modify__.children[i].owner.findObjectsWithTagInChildren(pTag, pSearchDisabled)) !== null) {
+        if ((found = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.findObjectsWithTagInChildren(pTag, pSearchDisabled)) !== null) {
             //Create the array as needed
             if (objs === null) objs = [];
 
@@ -741,6 +888,24 @@ GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabl
 
     //Return the array
     return objs;
+};
+
+/*
+    GameObject : destroy - Flag this Game Object, its components and its children for removeal
+    23/09/2016
+
+    Example:
+
+    //Destroy the player object when they die
+    if (!playerObj.alive)
+        playerObj.destroy();
+*/
+GameObject.prototype.destroy = function() {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed.  Called function 'destroy'");
+
+    this.__Internal__Dont__Modify__.destroy = true;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -758,6 +923,10 @@ GameObject.prototype.findObjectsWithTagInChildren = function(pTag, pSearchDisabl
     @param[in] pDelta - The delta time for the current cycle
 */
 GameObject.prototype.internalUpdate = function(pDelta) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'internalUpdate'");
+
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
@@ -774,9 +943,23 @@ GameObject.prototype.internalUpdate = function(pDelta) {
     //Call this objects update function
     if (this.update !== null) this.update(pDelta);
 
-    //Recurse into children
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.internalUpdate(pDelta);
+    //Update all children
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+        //Check if the child should be destroyed
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.destroy) {
+            //Dispose of the Game Object
+            this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.dispose();
+
+            //Remove the child from the list
+            this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.splice(i, 1);
+
+            //Force the bounds of the object to update
+            this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
+        }
+
+        //Otherwise recurse down into the child
+        else this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.internalUpdate(pDelta);
+    }
 };
 
 /*
@@ -788,6 +971,10 @@ GameObject.prototype.internalUpdate = function(pDelta) {
     @param[in] pDelta - The delta time for the current cycle
 */
 GameObject.prototype.internalLateUpdate = function(pDelta) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'internalLateUpdate'");
+
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
@@ -805,8 +992,8 @@ GameObject.prototype.internalLateUpdate = function(pDelta) {
     if (this.lateUpdate !== null) this.lateUpdate(pDelta);
 
     //Recurse into children
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.internalLateUpdate(pDelta);
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.internalLateUpdate(pDelta);
 };
 
 /*
@@ -818,13 +1005,29 @@ GameObject.prototype.internalLateUpdate = function(pDelta) {
     @param[in] pDelta - The delta time for the current cycle
 */
 GameObject.prototype.updateComponents = function(pDelta) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'updateComponents'");
+
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
     //Update the current components within the Game Object
     for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
+        //Check if the component should be destroyed
+        if (this.__Internal__Dont__Modify__.components[i].__Internal__Dont__Modify__.destroy) {
+            //Dispose of the component
+            this.__Internal__Dont__Modify__.components[i].internalDispose();
+
+            //Remove the component from the list
+            this.__Internal__Dont__Modify__.components.splice(i, 1);
+
+            //Force the bounds of the object to update
+            this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
+        }
+
         //Check the object is enabled
-        if (this.__Internal__Dont__Modify__.components[i].enabled) {
+        else if (this.__Internal__Dont__Modify__.components[i].__Internal__Dont__Modify__.enabled) {
             //Ensure that update function has been set
             if (this.__Internal__Dont__Modify__.components[i].update !== null)
                 this.__Internal__Dont__Modify__.components[i].update(pDelta);
@@ -839,8 +1042,8 @@ GameObject.prototype.updateComponents = function(pDelta) {
     }
 
     //Recurse into the children objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.updateComponents(pDelta);
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateComponents(pDelta);
 };
 
 /*
@@ -852,6 +1055,10 @@ GameObject.prototype.updateComponents = function(pDelta) {
     @return bool - Returns true if the GameObject's transform or components where updated
 */
 GameObject.prototype.updateTransforms = function() {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'updateTransforms'");
+
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
@@ -859,13 +1066,13 @@ GameObject.prototype.updateTransforms = function() {
     var transformUpdated = false;
 
     //Update the current transform
-    if (this.transform.updateTransforms(null, false))
+    if (this.__Internal__Dont__Modify__.transform.updateTransforms(null, false))
         transformUpdated = true;
 
     //Recurse into the children objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Test if the child objects have update position or component bounds
-        if (this.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms())
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms())
             this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
     }
 
@@ -881,16 +1088,16 @@ GameObject.prototype.updateTransforms = function() {
                 this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.components[i].lclBounds);
 
             //Loop through and encapsulate the childrens bounds
-            for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(
-                    this.transform.localMatrix.multi(this.transform.__Internal__Dont__Modify__.children[i].localMatrix)));
+            for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+                this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(
+                    this.__Internal__Dont__Modify__.transform.localMatrix.multi(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].localMatrix)));
 
             //Reset the force update flag
             this.__Internal__Dont__Modify__.forceBoundsUpdate = false;
         }
 
         //Set the global bounds of the game object
-        this.__Internal__Dont__Modify__.glbBounds = this.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(this.transform.globalMatrix);
+        this.__Internal__Dont__Modify__.glbBounds = this.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(this.__Internal__Dont__Modify__.transform.globalMatrix);
 
         //Return bounds updated
         return true;
@@ -910,22 +1117,26 @@ GameObject.prototype.updateTransforms = function() {
     @param[in] pProjView - The projection view matrix from the rendering Camera
 */
 GameObject.prototype.drawComponents = function(pCtx, pProjView) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'drawComponents'");
+
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
     //Recurse into the children objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx, pProjView);
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx, pProjView);
 
     //Store the projection world view matrix
     var projectionWorldView = null;
     if (this.__Internal__Dont__Modify__.components.length)
-        projectionWorldView = pProjView.multi(this.transform.globalMatrix);
+        projectionWorldView = pProjView.multi(this.__Internal__Dont__Modify__.transform.globalMatrix);
 
     //Update the current components within the Game Object
     for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
         //Check the object is enabled
-        if (this.__Internal__Dont__Modify__.components[i].enabled) {
+        if (this.__Internal__Dont__Modify__.components[i].__Internal__Dont__Modify__.enabled) {
             //Ensure that update function has been set
             if (this.__Internal__Dont__Modify__.components[i].draw !== null)
                 this.__Internal__Dont__Modify__.components[i].draw(pCtx, projectionWorldView);
@@ -939,20 +1150,30 @@ GameObject.prototype.drawComponents = function(pCtx, pProjView) {
     13/09/2016
 */
 GameObject.prototype.dispose = function() {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'dispose'");
+
     //Recurse down into child Game Objects
-    for (var i = this.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.transform.__Internal__Dont__Modify__.children[i].owner.dispose();
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.dispose();
+
+    //Clear the the child list
+    this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children = [];
 
     //Call components dispose functions
-    for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
-        //Check if function ahs been set
-        if (this.__Internal__Dont__Modify__.components[i] !== null)
-            this.__Internal__Dont__Modify__.components[i].dispose();
-    }
+    for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.components[i].internalDispose();
+
+    //Clear the components list
+    this.__Internal__Dont__Modify__.components = [];
 
     //Call this objects on destroy function
     if (this.onDestroy !== null)
         this.onDestroy();
+
+    //Set the disposed flag
+    this.__Internal__Dont__Modify__.disposed = true;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

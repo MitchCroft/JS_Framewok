@@ -51,10 +51,7 @@ function ComponentBase(pID) {
     //Enforce a component ID value being set
     if (typeof pID !== "number") throw new Error("Can not instantiate the new Component as a unique identifier has not be set. Ensure the identifier is greater than or equal to zero and unique for each type of custom component to prevent errors in Game Object search functions");
 
-    //Flags if the component is currently active
-    this.enabled = true;
-
-    //Store the local space bounds of the Component
+    //Store the local space bounds for the component
     this.lclBounds = new Bounds();
 
     /*  WARNING:
@@ -65,6 +62,11 @@ function ComponentBase(pID) {
     this.__Internal__Dont__Modify__ = {
         ID: pID,
         owner: null, //This value is set when the component is added/removed from a GameObject
+
+        enabled: true,
+
+        destroy: false,
+        disposed: false,
     };
 };
 
@@ -106,7 +108,100 @@ ComponentBase.prototype = {
     */
     get owner() {
         return this.__Internal__Dont__Modify__.owner;
+    },
+
+    /*
+        ComponentBase : enabled - Returns the enabled flag for the current component
+        23/09/2016
+
+        @return bool - Returns true if the component is currently active
+
+        Example:
+
+        //Check if the custom component is enabled
+        if (customComponent.enabled) {
+            //TODO: Do stuff
+        }
+    */
+    get enabled() {
+        return this.__Internal__Dont__Modify__.enabled;
+    },
+
+    /*
+        ComponentBase : enabled - Set the enabled flag for the current component
+        23/09/2016
+
+        @param[in] pState - A bool value representing the enabled state of the component
+
+        Example:
+
+        //Disable the custom component
+        customComponent.enabled = false;
+    */
+    set enabled(pState) {
+        this.__Internal__Dont__Modify__.enabled = pState;
+    },
+
+    /*
+        ComponentBase : disposed - Returns the disposal state of this Component
+        23/09/2016
+
+       @return bool - Returns true if the Component has been disposed of and
+                      is unusable
+
+        Example:
+
+        //Check if custom component can be used
+        if (!customComponent.disposed) {
+            //TODO: Use component
+        }
+    */
+    get disposed() {
+        return this.__Internal__Dont__Modify__.disposed;
     }
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                 Pipeline Functions                                         ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    ComponentBase : internalDispose - Clear up internal values and call the user defined dispose
+                                      function if defined. This is called by the scene management 
+                                      and shouldn't be explicitly called elsewhere.
+    23/09/2016
+*/
+ComponentBase.prototype.internalDispose = function() {
+    //Call the dispose function
+    if (this.dispose !== null)
+        this.dispose();
+
+    //Clear the owner
+    this.__Internal__Dont__Modify__.owner = null;
+
+    //Set the diposed flag
+    this.__Internal__Dont__Modify__.disposed = true;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                  General Function                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    ComponentBase : destroy - Flag this component to be destroyed and removed
+    23/09/2016
+
+    Example:
+
+    //Remove the custom component from an object
+    customComponent.destroy();
+*/
+ComponentBase.prototype.destroy = function() {
+    this.__Internal__Dont__Modify__.destroy = true;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

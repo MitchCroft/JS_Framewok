@@ -23,12 +23,18 @@
     Transform : Constructor - Initialise with default values
     08/08/2016
 
+    @param[in] pOwner - A reference back to an optional owner object (Default null)
+
     Example:
 
     //Create a new transform
     var playerTransform = new Transform();
+
+    OR
+
+    var playerTransform = new Transform(playerObj);
 */
-function Transform() {
+function Transform(pOwner) {
     /*  WARNING:
         Don't modify this internal object from the outside of the transform.
         Instead use Transform properties and functions to modify these values
@@ -36,7 +42,7 @@ function Transform() {
         correct.
     */
     this.__Internal__Dont__Modify__ = {
-        owner: null,
+        owner: (typeof pOwner !== "undefined" ? pOwner : null),
         pos: new Vec2(),
         rot: 0,
         scale: new Vec2(1),
