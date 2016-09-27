@@ -70,6 +70,7 @@ for (var i = 0; i < 1000; i++) {
     for (var j = 0; j < objects[i].shapes.length; j++) {
         objects[i].shapes[j].fillColor = new Color().randomize();
         objects[i].shapes[j].outlineColor = new Color().randomize();
+        objects[i].shapes[j].outlineWidth = -10;
     }
 }
 

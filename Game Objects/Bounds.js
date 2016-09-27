@@ -86,6 +86,12 @@ Bounds.prototype = {
         shapeBounds.points = squareShape.points;
     */
     set points(pPoints) {
+        //Check there are points in the array
+        if (pPoints.length === 0) {
+            this.min.set(this.max.set(new Vec2()));
+            return;
+        }
+
         //Set the min an max points to the first array element
         this.min.set(this.max.set(pPoints[0]));
 
@@ -200,11 +206,8 @@ Bounds.prototype.isIntersecting = function(pOther) {
     playerBounds.clean();
 */
 Bounds.prototype.clean = function() {
-    //Store the old min/max values
-    var oldPoints = [new Vec2(this.min), new Vec2(this.max)];
-
     //Set the points
-    this.points = oldPoints;
+    this.points = [new Vec2(this.min), new Vec2(this.max)];
 
     //Return itself
     return this;
