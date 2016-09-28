@@ -262,14 +262,14 @@ SceneManager.prototype.addScene = function(pType, pIdent) {
 
     /*----------Check the Type is Valid----------*/
     //Ensure the type is a function
-    if (typeof pType === "function")
+    if (typeof pType !== "function")
         throw new Error("The passed in Scene type " + pType + " (Type '" + typeof pType + "') is not an object base type. Please use an object type that inherits from SceneBase");
 
     //Create a new object to test the inheritance chain
     var testObj = new pType();
 
     //Test the prototype
-    if (!SceneBase.isPrototypeOf(testObj))
+    if (!testObj instanceof SceneBase)
         throw new Error("Could not add the Scene type " + pType + " (Type '" + typeof pType + "') as is does not inherit from BaseScene. Please inherit from BaseScene as the base for custom Scene objects");
 
     //Add the type to the array
@@ -310,7 +310,7 @@ SceneManager.prototype.update = function(pDelta) {
     }
 
     //Update the active scene
-    else this.__Internal__Dont__Modify__.activeScene.update(pDelta,
+    else this.__Internal__Dont__Modify__.activeScene.internalUpdate(pDelta,
         this.__Internal__Dont__Modify__.renderer,
         this.__Internal__Dont__Modify__.camera);
 };
@@ -512,14 +512,18 @@ SceneBase.prototype.FindObjectsWithTag = function(pTag, pSearchDisabled) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
-    SceneBase : update - Update and render the current Scene object using the passed in values
+    SceneBase : internalUpdate - Update and render the current Scene object using the passed in values
     13/09/2016
 
     @param[in] pDelta - The delta time for the current cycle
     @param[in] pGraphics - The Graphics object being used to render the scene
     @param[in] pCamera - The Camera object being used to render the scene
 */
-SceneBase.prototype.update = function(pDelta, pGraphics, pCamera) {
+SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
+    //If this scene has an update function call it
+    if (this.update !== null)
+        this.update(pDelta);
+
     //Loop through the internal root level nodes to preform updates
     for (var i = this.objects.length - 1; i >= 0; i--) {
         //Check if the object should be destroyed
@@ -545,7 +549,7 @@ SceneBase.prototype.update = function(pDelta, pGraphics, pCamera) {
 
     //Loop through the internal root level nodes to preform positional updates
     for (var i = this.objects.length - 1; i >= 0; i--)
-        this.objects[i].updateTransforms();
+        this.objects[i].updateTransforms(false);
 
     //TODO: Preform physics calculations
 
@@ -559,7 +563,7 @@ SceneBase.prototype.update = function(pDelta, pGraphics, pCamera) {
 
     //Loop through internal root level nodes to draw components
     for (var i = this.objects.length - 1; i >= 0; i--)
-        this.objects[i].drawComponents(pGraphics.draw, projView);
+        this.objects[i].drawComponents(pGraphics, projView);
     //TEMP
 };
 
@@ -592,3 +596,21 @@ SceneBase.prototype.Dispose = function() {
     };
 */
 SceneBase.prototype.startUp = null;
+
+/*
+    SceneBase : update - Allow for updating logic to be applied to a scene
+    28/09/2016
+
+    @param[in] number - If function is defined a number will be passed into the function that 
+                        contains the delta time for the current cycle 
+
+    Example:
+
+    //Spawn new enemies over time
+    CustomScene.prototype.update = function(pDelta) {
+        if (//Enough time has passed\\) {
+            //TODO: Spawn new enemy
+        }
+    };
+*/
+SceneBase.prototype.update = null;

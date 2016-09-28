@@ -219,7 +219,7 @@ function Graphics(pWidth, pHeight, pID, pResizeCallback) {
         //Ensure the parameter is a function
         if (typeof pCB !== "function") return false;
 
-        //Check that the function ahs not already been added once
+        //Check that the function has not already been added once
         for (var i = 0; i < canvasResizeEvents.length; i++) {
             if (canvasResizeEvents[i] === pCB) return false;
         }

@@ -59,7 +59,7 @@ function ShapeComponent() {
 };
 
 //Apply the ComponentBase prototype
-ShapeComponent.prototype = Object.create(ComponentBase);
+ShapeComponent.prototype = Object.create(ComponentBase.prototype);
 ShapeComponent.prototype.constructor = ShapeComponent;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

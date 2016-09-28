@@ -38,16 +38,13 @@
  **/
 
 /*
-    GameObject : Abstract Constructor - Initialise with default values
+    GameObject : Virtual Constructor - Initialise with default values
     31/08/2016
 
     @param[in] pTag - The optional tag to be given to the Game Object 
                       (Default "Game Object") 
 */
 function GameObject(pTag) {
-    //Enfore abstract nature of the GameObject
-    if (this.constructor === GameObject) throw new Error("Can not instantiate the abstract Game Object. Create a seperate object which inherits from Game Object");
-
     /*  WARNING:
         Don't modify this internal object from the outside of the Game Object.
         Instead use properties and functions to modify these values as this 
@@ -238,7 +235,7 @@ GameObject.prototype.addComponent = function(pComp) {
         throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'addComponent'");
 
     //Ensure the parameter is a component derivative
-    if (!ComponentBase.isPrototypeOf(pComp)) return false;
+    if (!pComp instanceof ComponentBase) return false;
 
     //Ensure that the owner is not the current object
     if (pComp.owner === this) return false;
@@ -290,7 +287,7 @@ GameObject.prototype.createComponent = function(pType) {
     var obj = new evaluatedType();
 
     //Test to ensure it is a component type
-    if (!ComponentBase.isPrototypeOf(obj))
+    if (!obj instanceof ComponentBase)
         throw new Error("Could not create a component of type " + pType + " as it is not a ComponentBase type. Ensure that the type you are trying to create derives from ComponentBase");
 
     //Set the owner of the new object
@@ -561,7 +558,7 @@ GameObject.prototype.removeComponent = function(pComp) {
     if (!this.__Internal__Dont__Modify__.components.length) return false;
 
     //Ensure the parameter is a component derivative
-    if (!ComponentBase.isPrototypeOf(pComp)) return false;
+    if (!pComp instanceof ComponentBase) return false;
 
     //Ensure the owner is the current object
     if (pComp.owner !== this) return false;
@@ -1035,7 +1032,7 @@ GameObject.prototype.updateComponents = function(pDelta) {
             //Ensure that update bounds function has been set
             if (this.__Internal__Dont__Modify__.components[i].updateBounds !== null) {
                 //Check if the bounds where updated
-                if (this.__Internal__Dont__Modify__[i].updateBounds())
+                if (this.__Internal__Dont__Modify__.components[i].updateBounds())
                     this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
             }
         }
@@ -1052,9 +1049,12 @@ GameObject.prototype.updateComponents = function(pDelta) {
                                     called elsewhere.
     01/09/2016
 
+    @param[in] pParentForce - Flags if the parent object has updated its transform and the child objects
+                              need to update their global transform matricies
+
     @return bool - Returns true if the GameObject's transform or components where updated
 */
-GameObject.prototype.updateTransforms = function() {
+GameObject.prototype.updateTransforms = function(pParentForce) {
     //Check if the object has been disposed of
     if (this.__Internal__Dont__Modify__.disposed)
         throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'updateTransforms'");
@@ -1066,13 +1066,13 @@ GameObject.prototype.updateTransforms = function() {
     var transformUpdated = false;
 
     //Update the current transform
-    if (this.__Internal__Dont__Modify__.transform.updateTransforms(null, false))
+    if (this.__Internal__Dont__Modify__.transform.updateTransforms(pParentForce, false))
         transformUpdated = true;
 
     //Recurse into the children objects
     for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--) {
         //Test if the child objects have update position or component bounds
-        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms())
+        if (this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateTransforms(transformUpdated))
             this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
     }
 

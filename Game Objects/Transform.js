@@ -382,7 +382,6 @@ Transform.prototype = {
 
     /*
         Transform : position - Get the global position of the current Transform object 
-                               (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return Vec2 - Returns the values stored in a Vec2 object
@@ -393,6 +392,10 @@ Transform.prototype = {
         var playerGlobalPos = playerTransform.position;
     */
     get position() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the global position
         return new Vec2(this.__Internal__Dont__Modify__.glbMat.data[2][0],
             this.__Internal__Dont__Modify__.glbMat.data[2][1]);
     },
@@ -422,7 +425,6 @@ Transform.prototype = {
 
     /*
         Transform : x - Get the global X position of the current Transform object
-                        (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return number - Returns the value of the global X position as a number
@@ -433,6 +435,10 @@ Transform.prototype = {
         var playerXPos = playerTransform.x;
     */
     get x() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the X axis cooridnate
         return this.__Internal__Dont__Modify__.glbMat.data[2][0];
     },
 
@@ -469,7 +475,6 @@ Transform.prototype = {
 
     /*
         Transform : y - Get the global Y position of the current Transform object
-                        (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return number - Returns the value of the global Y position as a number
@@ -480,6 +485,10 @@ Transform.prototype = {
         var playerYPos = playerTransform.y;
     */
     get y() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the Y axis coordinate
         return this.__Internal__Dont__Modify__.glbMat.data[2][1];
     },
 
@@ -516,7 +525,6 @@ Transform.prototype = {
 
     /*
         Transform : rotation - Get the global rotation of the current Transform object
-                               (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return number - Returns the global rotation as a number (In degrees)
@@ -527,6 +535,10 @@ Transform.prototype = {
         var playerGLobalRot = playerTransform.rotation;
     */
     get rotation() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the cleaned global rotation
         return cleanRotation(Math.atan2(this.__Internal__Dont__Modify__.glbMat.data[0][1], this.__Internal__Dont__Modify__.glbMat.data[1][1]) * 180 / Math.PI);
     },
 
@@ -563,7 +575,6 @@ Transform.prototype = {
 
     /*
         Transform : scale - Get the global scale of the current Transform object
-                            (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return Vec2 - Returns the scale values stored in a Vec2 object
@@ -574,6 +585,10 @@ Transform.prototype = {
         var playerGlobalScale = playerTransform.scale;
     */
     get scale() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the scale
         return new Vec2(
             Math.sqrt((this.__Internal__Dont__Modify__.glbMat.data[0][0] * this.__Internal__Dont__Modify__.glbMat.data[0][0]) +
                 (this.__Internal__Dont__Modify__.glbMat.data[1][0] * this.__Internal__Dont__Modify__.glbMat.data[1][0])),
@@ -615,7 +630,6 @@ Transform.prototype = {
 
     /*
         Transform : scaleX - Get the global scale on the X axis for the current Transform
-                             (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return number - Returns the global X scale as a number
@@ -626,6 +640,10 @@ Transform.prototype = {
         var playerXScale = playerTransform.scaleX;
     */
     get scaleX() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the X axis scale
         return Math.sqrt((this.__Internal__Dont__Modify__.glbMat.data[0][0] * this.__Internal__Dont__Modify__.glbMat.data[0][0]) +
             (this.__Internal__Dont__Modify__.glbMat.data[1][0] * this.__Internal__Dont__Modify__.glbMat.data[1][0]));
     },
@@ -663,7 +681,6 @@ Transform.prototype = {
 
     /*
         Transform : scaleY - Get the global scale on the Y axis for the current Transform
-                             (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return number - Returns the global Y scale as a number
@@ -674,6 +691,10 @@ Transform.prototype = {
         var playerYScale = playerTransform.scaleY;
     */
     get scaleY() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the Y axis scale
         return Math.sqrt((this.__Internal__Dont__Modify__.glbMat.data[0][1] * this.__Internal__Dont__Modify__.glbMat.data[0][1]) +
             (this.__Internal__Dont__Modify__.glbMat.data[1][1] * this.__Internal__Dont__Modify__.glbMat.data[1][1]));
     },
@@ -711,7 +732,6 @@ Transform.prototype = {
 
     /*
         Transform : right - Get the direction facing right from the current Transform
-                            (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return Vec2 - Returns the direction values as a Vec2 object
@@ -722,6 +742,10 @@ Transform.prototype = {
         var playerRight = playerTransform.right;
     */
     get right() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the direction to the right of the transform
         return new Vec2(this.__Internal__Dont__Modify__.glbMat.data[0][0], this.__Internal__Dont__Modify__.glbMat.data[0][1]).normalize();
     },
 
@@ -735,12 +759,15 @@ Transform.prototype = {
         var playerForward = playerTransform.forward;
     */
     get forward() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the direction to the front of the transform
         return new Vec2(this.__Internal__Dont__Modify__.glbMat.data[1][0], this.__Internal__Dont__Modify__.glbMat.data[1][1]).normalize();
     },
 
     /*
         Transform : globalMatrix - Get the global matrix for the current Transform
-                                  (Accurate as of last updateTransforms call)
         08/08/2016
 
         @return Mat3 - Returns a Mat3 object with the global matrix
@@ -751,6 +778,10 @@ Transform.prototype = {
         var playerGlobalMat = playerTransform.globalMatrix;
     */
     get globalMatrix() {
+        //Check if the transform is invalid
+        if (this.invalidTransforms) this.updateTransforms();
+
+        //Return the global matrix
         return this.__Internal__Dont__Modify__.glbMat;
     },
 
@@ -841,7 +872,7 @@ Transform.prototype = {
     OR
     transformRoot.updateTransforms(true, true);
 
-    //TODO: Render all transform obejcts in scene
+    //TODO: Render all transform objects in scene
 */
 Transform.prototype.updateTransforms = function(pForce, pRecurse) {
     //Check the parameter
