@@ -63,8 +63,8 @@ function Camera(pCanvas, pViewWidth, pViewHeight, pDistance) {
     //Setup the projection matrix
     this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
     this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
-    this.__Internal__Dont__Modify__.projection.data[2][0] = pViewWidth / 2;
-    this.__Internal__Dont__Modify__.projection.data[2][1] = pViewHeight / 2;
+    this.__Internal__Dont__Modify__.projection.data[2][0] = pCanvas.width / 2;
+    this.__Internal__Dont__Modify__.projection.data[2][1] = pCanvas.height / 2;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
