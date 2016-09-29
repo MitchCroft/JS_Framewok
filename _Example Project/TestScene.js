@@ -108,4 +108,7 @@ TestScene.prototype.update = function(pDelta) {
 
     //Lerp the camera position towards the player
     sceneManager.camera.position = sceneManager.camera.position.lerp(playerPos, this.cameraSpeed * pDelta);
+
+    //Make the camera's rotation match the players
+    //sceneManager.camera.rotation = 180 + this.playerObj.transform.rotation;
 };

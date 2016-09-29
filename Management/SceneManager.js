@@ -323,7 +323,7 @@ SceneManager.prototype.update = function(pDelta) {
  *      Version: 1.0
  *
  *      Requires:
- *      GameObject.js
+ *      GameObject.js, Bounds.js
  *
  *      Purpose:
  *      Provide a base point for defining a single game 
@@ -520,11 +520,11 @@ SceneBase.prototype.FindObjectsWithTag = function(pTag, pSearchDisabled) {
     @param[in] pCamera - The Camera object being used to render the scene
 */
 SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
-    //If this scene has an update function call it
+    /*--------------------Call the Current Scene's Update--------------------*/
     if (this.update !== null)
         this.update(pDelta);
 
-    //Loop through the internal root level nodes to preform updates
+    /*--------------------Call Internal Update on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--) {
         //Check if the object should be destroyed
         if (this.objects[i].__Internal__Dont__Modify__.destroy) {
@@ -539,32 +539,47 @@ SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
         else this.objects[i].internalUpdate(pDelta);
     }
 
-    //Loop through the internal root level nodes to preform late updates
+    /*--------------------Call Internal Late Update on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
         this.objects[i].internalLateUpdate(pDelta);
 
-    //Loop through the internal root level nodes to preform component updates
+    /*--------------------Call Update Componenets on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
         this.objects[i].updateComponents(pDelta);
 
-    //Loop through the internal root level nodes to preform positional updates
+    /*--------------------Call Update Transforms on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
         this.objects[i].updateTransforms(false);
 
+    /*--------------------Preform Physics Calculations for all Physics Enabled Game Objects--------------------*/
     //TODO: Preform physics calculations
 
+    /*--------------------Update all Game Objects Position in Spatial Map--------------------*/
     //TODO: Update spacial partition
 
-    //TODO: Find visible objects and render only those
-
-    //TEMP
+    /*--------------------Find the Render Area--------------------*/
     //Get the projection view from the camera
     var projView = pCamera.projectionView;
 
-    //Loop through internal root level nodes to draw components
+    //Get the inverse of the projection view
+    var projViewInv = projView.inversed;
+
+    //Get the canvas area from the camera
+    var renderArea = pCamera.canvasDimensions;
+
+    //Create a bounds object in order to test object visibility
+    var visibleBounds = new Bounds();
+
+    //Set the bounds points
+    visibleBounds.points = [projViewInv.multiVec(new Vec2(0, 0)), projViewInv.multiVec(new Vec2(renderArea.x, 0)),
+        projViewInv.multiVec(new Vec2(0, renderArea.y)), projViewInv.multiVec(new Vec2(renderArea.x, renderArea.y))
+    ];
+
+    //console.log("Visible Bounds -- Min(" + visibleBounds.min.x.toFixed(3) + ", " + visibleBounds.min.y.toFixed(3) + ") Max(" + visibleBounds.max.x.toFixed(3) + ", " + visibleBounds.max.y.toFixed(3) + ")");
+
+    /*--------------------Render All Components of Visible Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
-        this.objects[i].drawComponents(pGraphics, projView);
-    //TEMP
+        this.objects[i].drawComponents(pGraphics, projView, visibleBounds);
 };
 
 /*

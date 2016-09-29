@@ -298,9 +298,9 @@ ShapeComponent.prototype.updateBounds = function() {
     ShapeComponent : draw - Draw the shape component to the passed in 2D context 
     27/09/2016
 
-    @param[in] context - The 2D context object to be used for rendering
-    @param[in] projection world view - The projection world view Mat3 object for 
-                                       the viewing camera and the parent game object
+    @param[in] pCtx - The 2D context object to be used for rendering
+    @param[in] pProjWorldView - The projection world view Mat3 object for 
+                                the viewing camera and the parent game object
 */
 ShapeComponent.prototype.draw = function(pCtx, pProjWorldView) {
     //Check there is information to render

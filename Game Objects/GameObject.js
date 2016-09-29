@@ -192,6 +192,26 @@ GameObject.prototype = {
     },
 
     /*
+        GameObject : bounds - Returns the global Bounds object for the Game Object
+        29/09/2016
+
+        @return Bounds - Returns a Bounds object with the bounds values for the object
+
+        Example:
+
+        //Get the Game Objects global bounds
+        var glbBounds = playerObj.bounds;
+    */
+    get bounds() {
+        //Check if the object has been disposed of
+        if (this.__Internal__Dont__Modify__.disposed)
+            throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'get bounds'");
+
+        //Return the Bounds object
+        return this.__Internal__Dont__Modify__.glbBounds;
+    },
+
+    /*
         GameObject : disposed - Returns the disposal state of this Game Object
         23/09/2016
 
@@ -1090,7 +1110,7 @@ GameObject.prototype.updateTransforms = function(pParentForce) {
             //Loop through and encapsulate the childrens bounds
             for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
                 this.__Internal__Dont__Modify__.lclBounds.encapsulate(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.__Internal__Dont__Modify__.lclBounds.getGlobalBounds(
-                    this.__Internal__Dont__Modify__.transform.localMatrix.multi(this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].localMatrix)));
+                    this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].localMatrix));
 
             //Reset the force update flag
             this.__Internal__Dont__Modify__.forceBoundsUpdate = false;
@@ -1115,8 +1135,10 @@ GameObject.prototype.updateTransforms = function(pParentForce) {
 
     @param[in] pCtx - The 2D context object to be used for rendering
     @param[in] pProjView - The projection view matrix from the rendering Camera
+    @param[in] pVisBounds - A Bounds object defining the area that is being rendered, to enable 
+                            scene culling
 */
-GameObject.prototype.drawComponents = function(pCtx, pProjView) {
+GameObject.prototype.drawComponents = function(pCtx, pProjView, pVisBounds) {
     //Check if the object has been disposed of
     if (this.__Internal__Dont__Modify__.disposed)
         throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'drawComponents'");
@@ -1124,9 +1146,12 @@ GameObject.prototype.drawComponents = function(pCtx, pProjView) {
     //Check if this Game Object is still active
     if (!this.__Internal__Dont__Modify__.enabled) return;
 
+    //Check if the Game Object is visible
+    if (!this.__Internal__Dont__Modify__.glbBounds.isIntersecting(pVisBounds)) return;
+
     //Recurse into the children objects
     for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx, pProjView);
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.drawComponents(pCtx, pProjView, pVisBounds);
 
     //Store the projection world view matrix
     var projectionWorldView = null;

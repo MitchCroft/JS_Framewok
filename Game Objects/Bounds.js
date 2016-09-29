@@ -132,8 +132,17 @@ Bounds.prototype.getGlobalBounds = function(pTrans) {
     //Create a new Bounds object
     var globalBounds = new Bounds();
 
+    //Get an array of the corner coordinates for the current Bounds
+    var corners = [new Vec2(this.min), new Vec2(this.max.x, this.min.y),
+        new Vec2(this.max), new Vec2(this.min.x, this.max.y)
+    ];
+
+    //Apply the transform to the points
+    for (var i = corners.length - 1; i >= 0; i--)
+        corners[i] = pTrans.multiVec(corners[i]);
+
     //Apply the points to the global bounds
-    globalBounds.points = [pTrans.multiVec(this.min), pTrans.multiVec(this.max)];
+    globalBounds.points = corners;
 
     //Return the global bounds
     return globalBounds;

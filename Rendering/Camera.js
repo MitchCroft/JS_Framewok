@@ -232,7 +232,22 @@ Camera.prototype = {
     },
 
     /*
-        Camera : canvasDimensions - Set the canvas dimensions that are used for Camera object
+        Camera : canvasDimensions - Get the current canvas dimensions that are being used for the Camera object
+        29/09/2016
+
+        @return Vec2 - Returns a Vec2 object with the canvas dimensions contained
+
+        Example:
+
+        //Get the dimensions of the area the camera is rendering to
+        var renderDim = Camera.canvasDimensions;
+    */
+    get canvasDimensions() {
+        return new Vec2(this.__Internal__Dont__Modify__.canvasDimensions);
+    },
+
+    /*
+        Camera : canvasDimensions - Set the canvas dimensions that are used for the Camera object
         28/08/2016
 
         @param[in] pDim - A Vec2 object that contains the new canvas dimensions

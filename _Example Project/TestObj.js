@@ -7,6 +7,9 @@
 var TEST_OBJ_SIZE_MIN = 10;
 var TEST_OBJ_SIZE_MAX = 75;
 
+//Store the rate at which the fill color should change
+var TEST_OBJ_COL_SWAP_RATE = 10;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
 /////                                                 Object Definition                                          ////
@@ -35,6 +38,9 @@ var TEST_OBJ_SIZE_MAX = 75;
 function TestObj() {
     //Call the GameObject Base
     GameObject.call(this, "Test Object");
+
+    //Store the current animation time
+    this.aniTimer = 0;
 };
 
 //Apply the Game Object prototype
@@ -66,4 +72,33 @@ TestObj.prototype.start = function() {
 
     //Generate a random rotation for the object
     this.transform.rotation = Math.random() * 360;
+
+    //Create a random starting animation time
+    this.aniTimer = Math.random() * TEST_OBJ_COL_SWAP_RATE;
+};
+
+/*
+    TestObj : update - Update the fill color for the object every period of time
+    29/09/2016
+
+    @param[in] pDelta - The delta time for the current cycle
+*/
+TestObj.prototype.update = function(pDelta) {
+    //Decrease the ani timer
+    this.aniTimer -= pDelta;
+
+    //Check if the timer is < 0
+    if (this.aniTimer < 0) {
+        //Reset the animation timer
+        this.aniTimer = TEST_OBJ_COL_SWAP_RATE;
+
+        //Get the shape component
+        var comp = this.getComponentWithID(-1);
+
+        //Ensure the component was found
+        if (comp === null) throw new Error("Test Object was unable to get the component with ID -1");
+
+        //Set the fill color
+        comp.fillColor = new Color().randomize();
+    }
 };

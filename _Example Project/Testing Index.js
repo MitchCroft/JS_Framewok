@@ -23,7 +23,7 @@ Input.setCanvas(graphics.canvas);
 //Create the input axis
 var VERTICAL_AXIS = new InputAxis("vertical", Keys.W, Keys.S, 2, 0.5, Keys.UP, Keys.DOWN);
 var TURN_AXIS = new InputAxis("turn", Keys.D, Keys.A, 2, 2, Keys.RIGHT, Keys.LEFT);
-var ZOOM_AXIS = new InputAxis("zoom", Keys.SPACE);
+var ZOOM_AXIS = new InputAxis("zoom", Keys.SPACE, 0, 1, 0.5);
 
 //Add the input axis to the Input Manager
 Input.addAxis(VERTICAL_AXIS);
