@@ -30,7 +30,7 @@
     });
 */
 function ExtendProperties(pObj, pCollection) {
-    //Store the descriptor of the object that 
+    //Store the descriptor of the property extracted from the collection
     var description;
 
     //Loop through all the properties inside the collection

@@ -31,7 +31,7 @@
  *      };
  *
  *      //Apply the ComponentBase prototype
- *      SquareComponent.prototype = Object.create(ComponentBase);
+ * SquareComponent.prototype = Object.create(ComponentBase.prototype);
  *      SquareComponent.prototype.constructor = SquareComponent;
  **/
 
@@ -227,6 +227,25 @@ ComponentBase.prototype.destroy = function() {
     };
 */
 ComponentBase.prototype.update = null;
+
+/*
+    ComponentBase : lateUpdate - An empty late update function which can be filled to allow for
+                                 component values to be updated after the Physics calculations
+                                 for the cycle are evaluated.
+    03/10/2016
+
+    @param[in] number - If function is defined a number will be passed into the function that 
+                        contains the delta time for the current cycle
+
+    Example:
+
+    //Update the direction to a target
+    DirectionsComponent.prototype.lateUpdate = function(pDelta) {
+        //Get new direction after physics update
+        this.direction = this.target.transform.position.subtract(this.owner.transform.position).normalize();
+    };
+*/
+ComponentBase.prototype.lateUpdate = null;
 
 /*
     ComponentBase : updateBounds - An empty update bounds function which can be filled to allow

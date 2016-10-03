@@ -323,7 +323,7 @@ SceneManager.prototype.update = function(pDelta) {
  *      Version: 1.0
  *
  *      Requires:
- *      GameObject.js, Bounds.js
+ *      GameObject.js, Bounds.js, Physics.js
  *
  *      Purpose:
  *      Provide a base point for defining a single game 
@@ -341,7 +341,7 @@ SceneManager.prototype.update = function(pDelta) {
  *      };
  *
  *      //Apply the SceneBase prototype
- *      CustomScene.prototype = Object.create(SceneBase);
+ *      CustomScene.prototype = Object.create(SceneBase.prototype);
  *      CustomScene.prototype.constructor = CustomScene;
  *
  *      //Set the Start Up function
@@ -547,15 +547,16 @@ SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
     for (var i = this.objects.length - 1; i >= 0; i--)
         this.objects[i].updateComponents(pDelta);
 
+    /*--------------------Call Physics Update--------------------*/
+    //TODO
+
+    /*--------------------Call Late Update Componenets on all Game Objects--------------------*/
+    for (var i = this.objects.length - 1; i >= 0; i--)
+        this.objects[i].lateUpdateComponents(pDelta);
+
     /*--------------------Call Update Transforms on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
         this.objects[i].updateTransforms(false);
-
-    /*--------------------Preform Physics Calculations for all Physics Enabled Game Objects--------------------*/
-    //TODO: Preform physics calculations
-
-    /*--------------------Update all Game Objects Position in Spatial Map--------------------*/
-    //TODO: Update spacial partition
 
     /*--------------------Find the Render Area--------------------*/
     //Get the projection view from the camera
@@ -575,7 +576,9 @@ SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
         projViewInv.multiVec(new Vec2(0, renderArea.y)), projViewInv.multiVec(new Vec2(renderArea.x, renderArea.y))
     ];
 
-    //console.log("Visible Bounds -- Min(" + visibleBounds.min.x.toFixed(3) + ", " + visibleBounds.min.y.toFixed(3) + ") Max(" + visibleBounds.max.x.toFixed(3) + ", " + visibleBounds.max.y.toFixed(3) + ")");
+    /*--------------------Call the Current Scene's Pre-Draw--------------------*/
+    if (this.preDraw !== null)
+        this.preDraw(pGraphics, visibleBounds, projView);
 
     /*--------------------Render All Components of Visible Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)
@@ -629,3 +632,26 @@ SceneBase.prototype.startUp = null;
     };
 */
 SceneBase.prototype.update = null;
+
+/*
+    SceneBase : preDraw - Allow for the scene to draw to the context prior to the Game Objects
+    30/09/2016
+
+    @param[in] CanvasRenderingContext2D - The 2D context being used to render the scene
+    @param[in] Bounds - The Bounds object describing the area that has been found to be visible
+                        by the camera
+    @param[in] Projection View Matrix - A Mat3 object containing the projection view matrix for
+                                        the Camera object being used to draw
+
+    Example:
+
+    //Simple clear the background
+    CustomScene.prototype.preDraw = function(pCtx, pVisBounds, pProjView) {
+        //Set the clear color
+        pCtx.fillStyle = "black";
+
+        //Clear the entire canvas
+        pCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    };
+*/
+SceneBase.prototype.preDraw = null;

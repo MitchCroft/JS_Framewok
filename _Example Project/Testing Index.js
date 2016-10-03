@@ -68,10 +68,6 @@ function updateLoop(pDelta) {
     //Update the Input Manager
     Input.update(pDelta);
 
-    //Clear the background
-    graphics.draw.fillStyle = 'black';
-    graphics.draw.fillRect(0, 0, graphics.width, graphics.height);
-
     //Update the Scene Manager
     sceneManager.update(pDelta);
 

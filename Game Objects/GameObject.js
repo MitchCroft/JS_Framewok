@@ -33,7 +33,7 @@
  *      };
  *
  *      //Apply the Game Object prototype
- *      PlayerObj.prototype = Object.create(GameObject);
+ *      PlayerObj.prototype = Object.create(GameObject.prototype);
  *      PlayerObj.prototype.constructor = PlayerObj;
  **/
 
@@ -1048,6 +1048,49 @@ GameObject.prototype.updateComponents = function(pDelta) {
             //Ensure that update function has been set
             if (this.__Internal__Dont__Modify__.components[i].update !== null)
                 this.__Internal__Dont__Modify__.components[i].update(pDelta);
+        }
+    }
+
+    //Recurse into the children objects
+    for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateComponents(pDelta);
+};
+
+/*
+    GameObject : lateUpdateComponents - Goes down the hierarchy chain updating Game Objects components.
+                                        This is called by the scene management and shouldn't explicitly
+                                        called elsewhere.
+    03/10/2016
+
+    @param[in] pDelta - The delta time for the current cycle
+*/
+GameObject.prototype.lateUpdateComponents = function(pDelta) {
+    //Check if the object has been disposed of
+    if (this.__Internal__Dont__Modify__.disposed)
+        throw new Error("Trying to use the Game Object " + this + " (Tag: " + this.__Internal__Dont__Modify__.tag + ") after it has been disposed. Called function 'lateUpdateComponents'");
+
+    //Check if this Game Object is still active
+    if (!this.__Internal__Dont__Modify__.enabled) return;
+
+    //Update the current components within the Game Object
+    for (var i = this.__Internal__Dont__Modify__.components.length - 1; i >= 0; i--) {
+        //Check if the component should be destroyed
+        if (this.__Internal__Dont__Modify__.components[i].__Internal__Dont__Modify__.destroy) {
+            //Dispose of the component
+            this.__Internal__Dont__Modify__.components[i].internalDispose();
+
+            //Remove the component from the list
+            this.__Internal__Dont__Modify__.components.splice(i, 1);
+
+            //Force the bounds of the object to update
+            this.__Internal__Dont__Modify__.forceBoundsUpdate = true;
+        }
+
+        //Check the object is enabled
+        else if (this.__Internal__Dont__Modify__.components[i].__Internal__Dont__Modify__.enabled) {
+            //Ensure that update function has been set
+            if (this.__Internal__Dont__Modify__.components[i].lateUpdate !== null)
+                this.__Internal__Dont__Modify__.components[i].lateUpdate(pDelta);
 
             //Ensure that update bounds function has been set
             if (this.__Internal__Dont__Modify__.components[i].updateBounds !== null) {
@@ -1060,7 +1103,7 @@ GameObject.prototype.updateComponents = function(pDelta) {
 
     //Recurse into the children objects
     for (var i = this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children.length - 1; i >= 0; i--)
-        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.updateComponents(pDelta);
+        this.__Internal__Dont__Modify__.transform.__Internal__Dont__Modify__.children[i].owner.lateUpdateComponents(pDelta);
 };
 
 /*

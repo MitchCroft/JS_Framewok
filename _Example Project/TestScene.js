@@ -28,7 +28,7 @@ function TestScene() {
     SceneBase.call(this);
 
     //Define the number of test objects to create
-    this.testObjectCount = 2000;
+    this.testObjectCount = 250;
 
     //Define the speed with which the camera moves
     this.cameraSpeed = 2;
@@ -108,7 +108,26 @@ TestScene.prototype.update = function(pDelta) {
 
     //Lerp the camera position towards the player
     sceneManager.camera.position = sceneManager.camera.position.lerp(playerPos, this.cameraSpeed * pDelta);
+};
 
-    //Make the camera's rotation match the players
-    //sceneManager.camera.rotation = 180 + this.playerObj.transform.rotation;
+/*
+    TestScene : preDraw - Clear the backbuffer of the graphics object
+    30/09/2016
+
+    @param[in] pCtx - The 2D context being used to render the scene
+    @param[in] pVisBounds - The Bounds object describing the area that has been found to be visible
+                            by the camera
+    @param[in] pProjView - A Mat3 object containing the projection view matrix for
+                           the Camera object being used to draw
+*/
+TestScene.prototype.preDraw = function(pCtx, pVisBounds, pProjView) {
+    //Set the draw color
+    pCtx.fillStyle = "black";
+
+    //Convert the world space visible bounds to screen space
+    var screenSpaceBounds = pVisBounds.getGlobalBounds(pProjView);
+
+    //Fill in the rectangle in the background
+    pCtx.fillRect(screenSpaceBounds.min.x, screenSpaceBounds.min.y,
+        screenSpaceBounds.max.x - screenSpaceBounds.min.x, screenSpaceBounds.max.y - screenSpaceBounds.min.y);
 };

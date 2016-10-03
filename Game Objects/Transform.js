@@ -1033,30 +1033,3 @@ Transform.prototype.transformPoint = function(pVec) {
 Transform.prototype.inverseTransformPoint = function(pVec) {
     return this.__Internal__Dont__Modify__.glbMat.inversed.multiVec(pVec);
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Helper Functions                                             ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-    cleanRotation - Given any degree rotation bring it back to the 0 - 359 range
-    30/08/2016
-
-    @param[in] pRot - The rotation value to clean
-
-    @return number - Returns the value of pRot bound to 0 - 359
-
-    Example:
-
-    //Get a random rotation
-    var randRot = cleanRotation(Math.random() * 2000);
-*/
-function cleanRotation(pRot) {
-    //If the rotation value is into the negatives 
-    if (pRot < 0) return (360 + pRot % 360);
-
-    //Otherwise simple modulus calculation
-    else return pRot % 360;
-};
