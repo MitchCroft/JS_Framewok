@@ -624,6 +624,23 @@ PhysicsObject.prototype = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
+/////                                               Collider Type Defines                                        ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *      Name: ColliderType
+ *      Author: Mitchell Croft
+ *      Date: 12/10/2016
+ *
+ *      Purpose:
+ *      Provide a numerical value to the different type of 
+ *      Collider objects that can be created
+ */
+var ColliderType = { NULL: -1, SQUARE: 1, CIRCLE: 2, SHAPE: 4 };
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
 /////                                                 Object Definition                                          ////
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -636,7 +653,7 @@ PhysicsObject.prototype = {
  *      Version: 1.0
  *
  *      Requires:
- *      Vec2.js, Bounds.js
+ *      Vec2.js, Bounds.js, ExtendProperties.js
  *
  *      Purpose:
  *      Provide a base point for other collider types to inherit
@@ -666,6 +683,9 @@ function ColliderBase() {
         //Flags if this collider is a trigger or solid
         trigger: false,
 
+        //Store the center of mass offset for the collider (Will remain at 0,0 unless collider is a shape collider)
+        COMOffset: new Vec2(),
+
         //Store the axis aligned bounds of the collider for quick elimination
         bounds: new Bounds(),
     };
@@ -678,6 +698,23 @@ function ColliderBase() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ColliderBase.prototype = {
+    /*
+        ColliderBase : type - Returns the type of collider the obejct is
+        12/01/2016
+
+        @return ColliderType - Returns a number defined in the ColliderType object
+
+        Example:
+
+        //Check if the collider is a square collider
+        if (playerCollider.type === ColliderType.SQUARE) {
+            //TODO: Do something
+        }
+    */
+    get type() {
+        return ColliderType.NULL;
+    },
+
     /*
         ColliderBase : enabled - Get's the enabled flag of the Collider object
         03/10/2016
@@ -786,4 +823,76 @@ ColliderBase.prototype = {
         //Set the trigger state
         this.__Internal__Dont__Modify__.trigger = pState;
     },
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                  Main Functions                                            ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    ColliderBase : collidesWith - Checks if this ColliderBase object intersects another
+                                  This is used by the Physics Manager
+    12/10/2016
+
+    @param[in] pOther - The ColliderBase object to test collision against
+
+    @return bool - Returns true if the two ColliderBase obejcts collide
+*/
+ColliderBase.prototype.collidesWith = function(pOther) {
+    //Check the types of the colliders are valid
+    switch (this.type) {
+        case ColliderType.SQUARE:
+        case ColliderType.CIRCLE:
+        case ColliderType.SHAPE:
+            break;
+        default:
+            throw new Error("Can not test ColliderBase collision using " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "') as " + this + " is not a valid ColliderBase object");
+    }
+    switch (pOther.type) {
+        case ColliderType.SQUARE:
+        case ColliderType.CIRCLE:
+        case ColliderType.SHAPE:
+            break;
+        default:
+            throw new Error("Can not test ColliderBase collision using " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "') as " + pOther + " is not a valid ColliderBase object");
+    }
+
+    //Switch based on the collision types of the objects
+    switch (this.type | pOther.type) {
+        //Check for collision between two square colliders
+        case ColliderType.SQUARE:
+
+            break;
+
+            //Check for collision between two circle colliders
+        case ColliderType.CIRCLE:
+
+            break;
+
+            //Check for collision between two shape colliders
+        case ColliderType.SHAPE:
+
+            break;
+
+            //Check for collision between a square and a circle collider
+        case (ColliderType.SQUARE | ColliderType.CIRCLE):
+
+            break;
+
+            //Check for collision between a square and a shape collider
+        case (ColliderType.SQUARE | ColliderType.SHAPE):
+
+            break;
+
+            //Check collision between a circle and a shape collider
+        case (ColliderType.CIRCLE | ColliderType.SHAPE):
+
+            break;
+
+            //Error reporting
+        default:
+            throw new Error("An unknown error occured when testing collision between " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "')");
+    }
 };
