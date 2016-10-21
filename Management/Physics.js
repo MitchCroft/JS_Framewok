@@ -595,7 +595,7 @@ PhysicsObject.prototype = {
 
         Example:
 
-        //Set the players physics object to use a box collider
+        //Set the players physics object to use a square collider
         playerPhysObj.collider = new BoxCollider();
     */
     set collider(pCol) {
@@ -620,7 +620,46 @@ PhysicsObject.prototype = {
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//TODO
+/*
+    PhysicsObject : collidesWith - Checks if this PhysicsObject intersects
+                                   with another. This is called by the Physics
+                                   Manager.
+    21/10/2016
+
+    @param[in] pOther - The other Physics Obejct that collision is being checked against
+
+    @return CollisionData - Returns a CollisionData object containing collision 
+                            information or null if no collision
+*/
+PhysicsObject.prototype.collidesWith = function(pOther) {
+    //Check the objects colliders are valid
+    if (this.collider === null || pOther.collider === null)
+        return null;
+
+    //Find the collision test to preform
+    switch (this.collider.type | pOther.collider.type) {
+        case ColliderType.BOX:
+
+            break;
+        case ColliderType.CIRCLE:
+
+            break;
+        case ColliderType.SHAPE:
+
+            break;
+        case (ColliderType.BOX | ColliderType.CIRCLE):
+
+            break;
+        case (ColliderType.BOX | ColliderType.SHAPE):
+
+            break;
+        case (ColliderType.CIRCLE | ColliderType.SHAPE):
+
+            break;
+        default:
+            throw new Error("Can not test collision between the types " + this.collider.type + " and " + pOther.collider.type + ". Please check colliders are correct");
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -637,7 +676,7 @@ PhysicsObject.prototype = {
  *      Provide a numerical value to the different type of 
  *      Collider objects that can be created
  */
-var ColliderType = { NULL: -1, SQUARE: 1, CIRCLE: 2, SHAPE: 4 };
+var ColliderType = { NULL: -1, BOX: 1, CIRCLE: 2, SHAPE: 4 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -653,7 +692,7 @@ var ColliderType = { NULL: -1, SQUARE: 1, CIRCLE: 2, SHAPE: 4 };
  *      Version: 1.0
  *
  *      Requires:
- *      Vec2.js, Bounds.js, ExtendProperties.js
+ *      Vec2.js, Bounds.js
  *
  *      Purpose:
  *      Provide a base point for other collider types to inherit
@@ -666,7 +705,7 @@ var ColliderType = { NULL: -1, SQUARE: 1, CIRCLE: 2, SHAPE: 4 };
 */
 function ColliderBase() {
     //Enfore abstract nature of the ColliderBase
-    if (this.constructor === ColliderBase) throw new Error("Can not instantiate the abstract ColliderBase. Use either CircleCollider or BoxCollider");
+    if (this.constructor === ColliderBase) throw new Error("Can not instantiate the abstract ColliderBase. Use a BoxCollider, CircleCollider or ShapeCollider");
 
     /*  WARNING:
         Don't modify this internal object from the outside of the Collider object.
@@ -700,14 +739,14 @@ function ColliderBase() {
 ColliderBase.prototype = {
     /*
         ColliderBase : type - Returns the type of collider the obejct is
-        12/01/2016
+        12/10/2016
 
         @return ColliderType - Returns a number defined in the ColliderType object
 
         Example:
 
         //Check if the collider is a square collider
-        if (playerCollider.type === ColliderType.SQUARE) {
+        if (playerCollider.type !== ColliderType.NULL) {
             //TODO: Do something
         }
     */
@@ -827,72 +866,475 @@ ColliderBase.prototype = {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
+/////                                                 Object Definition                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *      Name: BoxCollider
+ *      Author: Mitchell Croft
+ *      Date: 21/10/2016
+ *
+ *      Version: 1.0
+ *
+ *      Requires:
+ *      ExtendProperties.js
+ *
+ *      Purpose:
+ *      Define a square area that acts as the collision
+ *      area of the collider
+ **/
+
+/*
+    BoxCollider : Constructor - Initialise with default values
+    21/10/2016
+
+    Example:
+
+    //Create a collider for the player
+    playerPhysObj.collider = new BoxCollider();
+*/
+function BoxCollider() {
+    //Call the Collider Base base for initial setup
+    ColliderBase.call(this);
+
+    //Store the extents of the collider
+    this.__Internal__Dont__Modify__.extents = new Vec2(1);
+};
+
+//Apply the ColliderBase prototype
+BoxCollider.prototype = Object.create(ColliderBase.prototype);
+BoxCollider.prototype.constructor = BoxCollider;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Property Definitions                                         ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ExtendProperties(BoxCollider, {
+    /*
+        BoxCollider : type - Returns the type of collider the obejct is
+        21/10/2016
+
+        @return ColliderType - Returns a number defined in the ColliderType object
+
+        Example:
+
+        //Check if the collider is a square collider
+        if (playerCollider.type === ColliderType.BOX) {
+            //TODO: Do something
+        }
+    */
+    get type() {
+        return ColliderType.BOX;
+    },
+
+    /*
+        BoxCollider : extents - Get the extents of the area covered by this collider
+        21/10/2016
+
+        @return Vec2 - Return the extents stored in a Vec2 object
+
+        Example:
+
+        //Get the extents of the players box collider
+        var playerExtents = playerBoxCollider.extents;
+    */
+    get extents() {
+        return this.__Internal__Dont__Modify__.extents;
+    },
+
+    /*
+        BoxCollider : extents - Set the collider extents of the Box Collider
+        21/10/2016
+
+        @param[in] pExt - A Vec2 object storing the new extents of the collider (>= 0)
+
+        Example:
+
+        //Set the starting extents of the player's box collider
+        playerBoxCollider = new Vec2(3, 4);
+    */
+    set extents(pExt) {
+        //Check the value is a Vec2 object
+        if (!pExt instanceof Vec2)
+            throw new Error("Can not set the extents to " + pExt + " (Type '" + typeof pExt + "') Please use a Vec2 object");
+
+        //Set the extents
+        this.__Internal__Dont__Modify__.extents.set(pExt);
+
+        //Ensure extents are >= 0
+        this.__Internal__Dont__Modify__.extents.x = Math.max(this.__Internal__Dont__Modify__.extents.x, 0);
+        this.__Internal__Dont__Modify__.extents.y = Math.max(this.__Internal__Dont__Modify__.extents.y, 0);
+
+        //Update the bounds of the collider
+        this.updateBounds();
+    },
+
+    /*
+        BoxCollider : extentX - Get the X axis extent of the collider
+        21/10/2016
+
+        @return number - Returns the extent of the X axis as a number
+
+        Example:
+
+        //Get the X extent of the player
+        var XExtent = playerBoxCollider.extentX;
+    */
+    get extentX() {
+        return this.__Internal__Dont__Modify__.extents.x;
+    },
+
+    /*
+        BoxCollider : extentX - Set the X axis extent of the collider
+        21/10/2016
+
+        @param[in] pVal - A number defining the new X extent length
+
+        Example:
+
+        //Set the players X extent length
+        playerBoxCollider.extentX = 4;
+    */
+    set extentX(pVal) {
+        //Check the value is a number
+        if (typeof pVal !== "number")
+            throw new Error("Can not set the X extent of the Box Collider to " + pVal + " (Type '" + typeof pVal + "') Please use a number");
+
+        //Set the new extent value
+        this.__Internal__Dont__Modify__.extents.x = Math.max(pVal, 0);
+
+        //Update the bounds of the collider
+        this.updateBounds();
+    },
+
+    /*
+        BoxCollider : extentY - Get the Y axis extent of the collider
+        21/10/2016
+
+        @return number - Returns the extent of the Y axis as a number
+
+        Example:
+
+        //Get the Y extent of the player
+        var YExtent = playerBoxCollider.extentY;
+    */
+    get extentY() {
+        return this.__Internal__Dont__Modify__.extents.y;
+    },
+
+    /*
+        BoxCollider : extentY - Set the Y axis extent of the collider
+        21/10/2016
+
+        @param[in] pVal 0 A number defining the new Y extent length
+
+        Example:
+
+        //Set the players Y extent length
+        playerBoxCollider.extentY = 2;
+    */
+    set extentY(pVal) {
+        //Check the value is a number
+        if (typeof pVal !== "number")
+            throw new Error("Can not set the Y extent of the Box Collider to " + pVal + " (Type '" + typeof pVal + "') Please use a number");
+
+        //Set the new extent value
+        this.__Internal__Dont__Modify__.extents.y = Math.max(pVal, 0);
+
+        //Update the bounds of the collider
+        this.updateBounds();
+    },
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
 /////                                                  Main Functions                                            ////
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
-    ColliderBase : collidesWith - Checks if this ColliderBase object intersects another
-                                  This is used by the Physics Manager
-    12/10/2016
+    BoxCollider : updateBounds - Update the colliders bounds object
+    21/10/2016
+    
+    Example:
 
-    @param[in] pOther - The ColliderBase object to test collision against
-
-    @return bool - Returns true if the two ColliderBase obejcts collide
+    //Force the bounds of the collider to update
+    playerBoxCollider.updateBounds();
 */
-ColliderBase.prototype.collidesWith = function(pOther) {
-    //Check the types of the colliders are valid
-    switch (this.type) {
-        case ColliderType.SQUARE:
-        case ColliderType.CIRCLE:
-        case ColliderType.SHAPE:
-            break;
-        default:
-            throw new Error("Can not test ColliderBase collision using " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "') as " + this + " is not a valid ColliderBase object");
-    }
-    switch (pOther.type) {
-        case ColliderType.SQUARE:
-        case ColliderType.CIRCLE:
-        case ColliderType.SHAPE:
-            break;
-        default:
-            throw new Error("Can not test ColliderBase collision using " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "') as " + pOther + " is not a valid ColliderBase object");
-    }
+BoxCollider.prototype.updateBounds = function() {
+    //Update the min/ max of the bounds based on the extents
+    this.__Internal__Dont__Modify__.bounds.min = new Vec2(-this.__Internal__Dont__Modify__.extents.x / 2, -this.__Internal__Dont__Modify__.extents.y / 2);
+    this.__Internal__Dont__Modify__.bounds.max = new Vec2(this.__Internal__Dont__Modify__.extents.x / 2, this.__Internal__Dont__Modify__.extents.y / 2);
+};
 
-    //Switch based on the collision types of the objects
-    switch (this.type | pOther.type) {
-        //Check for collision between two square colliders
-        case ColliderType.SQUARE:
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                 Object Definition                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            break;
+/*
+ *      Name: CircleCollider
+ *      Author: Mitchell Croft
+ *      Date: 21/10/2016
+ *
+ *      Version: 1.0
+ *
+ *      Requires:
+ *      ExtendProperties.js
+ *
+ *      Purpose:
+ *      Define a circle area that acts as the collision
+ *      area of the collider
+ **/
 
-            //Check for collision between two circle colliders
-        case ColliderType.CIRCLE:
+/*
+    CircleCollider : Constructor - Initialise with default values
+    21/10/2016
 
-            break;
+    Example:
 
-            //Check for collision between two shape colliders
-        case ColliderType.SHAPE:
+    //Create a collider for the player
+    playerPhysObj.collider = new CircleCollider();
+*/
+function CircleCollider() {
+    //Call the Collider Base base for initial setup
+    ColliderBase.call(this);
 
-            break;
+    //Store the radius of the collider
+    this.__Internal__Dont__Modify__.radius = 1;
+};
 
-            //Check for collision between a square and a circle collider
-        case (ColliderType.SQUARE | ColliderType.CIRCLE):
+//Apply the ColliderBase prototype
+CircleCollider.prototype = Object.create(ColliderBase.prototype);
+CircleCollider.prototype.constructor = CircleCollider;
 
-            break;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Property Definitions                                         ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            //Check for collision between a square and a shape collider
-        case (ColliderType.SQUARE | ColliderType.SHAPE):
+ExtendProperties(CircleCollider, {
+    /*
+        CircleCollider : type - Returns the type of collider the obejct is
+        21/10/2016
 
-            break;
+        @return ColliderType - Returns a number defined in the ColliderType object
 
-            //Check collision between a circle and a shape collider
-        case (ColliderType.CIRCLE | ColliderType.SHAPE):
+        Example:
 
-            break;
+        //Check if the collider is a square collider
+        if (playerCollider.type === ColliderType.CIRCLE) {
+            //TODO: Do something
+        }
+    */
+    get type() {
+        return ColliderType.CIRCLE;
+    },
 
-            //Error reporting
-        default:
-            throw new Error("An unknown error occured when testing collision between " + this + " (Type '" + typeof this + "') and " + pOther + " (Type '" + typeof pOther + "')");
-    }
+    /*
+        CircleCollider : radius - Get the radius of the Circle Collider
+        21/10/2016
+
+        @return number - Returns the radius as a number
+
+        Example:
+
+        //Get the radius of the players circle collider
+        var radius = playerCircleCollider.radius;
+    */
+    get radius() {
+        return this.__Internal__Dont__Modify__.radius;
+    },
+
+    /*
+        CircleCollider : radius - Set the radius of the Circle Collider
+        21/10/2016
+
+        @param[in] pVal - Set the radius of the Circle Collider (>= 0)
+
+        Example:
+
+        //Set the players starting radius
+        playerCircleCollider.radius = 10;
+    */
+    set radius(pVal) {
+        //Check the value is a number
+        if (typeof pVal === "number")
+            throw new Error("Can not set the radius of the Circle Collider to " + pVal + " (Type '" + typeof pVal + "') Please use a number");
+
+        //Set the radius 
+        this.__Internal__Dont__Modify__.radius = Math.max(pVal, 0);
+
+        //Update the bounds of the collider
+        this.updateBounds();
+    },
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                  Main Functions                                            ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    CircleCollider : updateBounds - Update the colliders bounds object
+    21/10/2016
+
+    Example:
+
+    //Force the bounds of the collider to update
+    playerCircleCollider.updateBounds();
+*/
+CircleCollider.prototype.updateBounds = function() {
+    //Update the min/ max of the bounds based on the radius
+    this.__Internal__Dont__Modify__.bounds.min = new Vec2(-this.__Internal__Dont__Modify__.radius);
+    this.__Internal__Dont__Modify__.bounds.max = new Vec2(this.__Internal__Dont__Modify__.radius);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                 Object Definition                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *      Name: ShapeCollider
+ *      Author: Mitchell Croft
+ *      Date: 21/10/2016
+ *
+ *      Version: 1.0
+ *
+ *      Requires:
+ *      ExtendProperties.js
+ *
+ *      Purpose:
+ *      Define a custom area that acts as the collision 
+ *      area of the collider
+ **/
+
+/*
+    ShapeCollider : Constructor - Initialise with default values
+    21/10/2016
+
+    Example:
+
+    //Create a collider for the player
+    playerPhysObj.collider = new ShapeCollider();
+*/
+function ShapeCollider() {
+    //Call the Collider Base base for initial setup
+    ColliderBase.call(this);
+
+    //Store the points of the shape
+    this.__Internal__Dont__Modify__.points = [new Vec2(), new Vec2(), new Vec2()];
+};
+
+//Apply the ColliderBase prototype
+ShapeCollider.prototype = Object.create(ColliderBase.prototype);
+ShapeCollider.prototype.constructor = ShapeCollider;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Property Definitions                                         ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ExtendProperties(ShapeCollider, {
+    /*
+        ShapeCollider : type - Returns the type of collider the obejct is
+        21/10/2016
+
+        @return ColliderType - Returns a number defined in the ColliderType object
+
+        Example:
+
+        //Check if the collider is a square collider
+        if (playerCollider.type === ColliderType.SHAPE) {
+            //TODO: Do something
+        }
+    */
+    get type() {
+        return ColliderType.SHAPE;
+    },
+
+    /*
+        ShapeCollider : points - Get the points that make up the custom shape
+        21/10/2016
+
+        @return Vec2 array - Returns an array of Vec2 objects
+
+        Example:
+
+        //Get the points that make up the custom collider
+        var colliderPoints = playerShapeCollider.points;
+    */
+    get points() {
+        return this.__Internal__Dont__Modify__.points;
+    },
+
+    /*
+        ShapeCollider : points - Set the points used to define the custom collision area
+        21/10/2016
+
+        @param pPoints - An array of Vec2 objects containing the position data for
+                         the different points (Minimum of 3 points)
+
+        Example:
+
+        //Set the collision points for the player collider
+        playerShapeCollider.points = [new Vec2(0, -0.5), new Vec2(0.5, 0.5), new Vec2(-0.5, 0.5)];
+    */
+    set points(pPoints) {
+        //Check to ensure that the points are an array
+        if (!pPoints instanceof Array)
+            throw new Error("Can not set Shape Collider points to " + pPoints + " (Type '" + typeof pPoints + "') Please use an array of Vec2 objects with at least 3 points");
+
+        //Check there are at least of 3 points
+        if (pPoints.length < 3)
+            throw new Error("Can not set Shape Collider points with " + pPoints.length + " as there must be at least 3 points to make a shape. Please supply an array of at least three points");
+
+        //Store a temporary array to store values
+        var temp = [];
+
+        //Check all objects in the array are Vec2 
+        for (var i = 0; i < pPoints.length; i++) {
+            //Check the value is a Vec2 
+            if (pPoints[i] instanceof Vec2)
+                temp[i] = pPoints[i];
+
+            //Otherwise throw an error
+            else throw new Error("Can not set points data with a value of " + pPoints[i] + " (Type '" + typeof pPoints[i] + "') Please only use Vec2 objects");
+        }
+
+        //Set the colliders points to the temp array
+        this.__Internal__Dont__Modify__.points = temp;
+
+        //Update the bounds of the collider
+        this.updateBounds();
+    },
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                  Main Functions                                            ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    ShapeCollider : updateBounds - Update the colliders bounds object
+    21/10/2016
+
+    Example:
+
+    //Force the bounds of the collider to update
+    playerShapeCollider.updateBounds();
+*/
+ShapeCollider.prototype.updateBounds = function() {
+    //Assign the bounds object the collision points
+    this.__Internal__Dont__Modify__.bounds.points = this.__Internal__Dont__Modify__.points;
 };
