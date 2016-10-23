@@ -63,19 +63,19 @@ var Physics = new function() {
 
                 //Apply the property if not undefined
                 if (typeof description !== "undefined")
-                    Object.defineProperty(this.__proto__, prop, description);
+                    Object.defineProperty(Physics.__proto__, prop, description);
             }
         }
     };
 };
 
-Physics.__Internal__Dont__Modify__.extender({
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////                                                                                                            ////
-    /////                                               Property Definitions                                         ////
-    /////                                                                                                            ////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Property Definitions                                         ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+Physics.__Internal__Dont__Modify__.extender({
     /*
         Physics : gravity - Get the value of gravity effecting all Rigid Body Physics Objects
         30/09/2016
@@ -162,6 +162,23 @@ Physics.__Internal__Dont__Modify__.extender({
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ *      Name: ForceMode
+ *      Author: Mitchell Croft
+ *      Date: 23/10/2016
+ *
+ *      Purpose:
+ *      Name the numerical values given to the different 
+ *      modes of applying force
+ **/
+var ForceMode = { FORCE: 0, IMPULSE: 1 };
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                 Object Definition                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
  *      Name: PhysicsObject
  *      Author: Mitchell Croft
  *      Date: 30/09/2016
@@ -169,7 +186,7 @@ Physics.__Internal__Dont__Modify__.extender({
  *      Version: 1.0
  *
  *      Requires:
- *      Vec2.js
+ *      Bounds.js
  *
  *      Purpose:
  *      Provide an object for the Physics manager object to 
@@ -215,11 +232,14 @@ function PhysicsObject() {
         invMass: 1,
 
         //Store the drag values
-        drag: 0.5,
+        drag: 0.1,
         angDrag: 0.05,
 
         //Store a reference to the collider used on this object
         collider: null,
+
+        //Store the global bounding box of the collider attached
+        glbBounds: null,
     };
 };
 
@@ -467,7 +487,7 @@ PhysicsObject.prototype = {
         30/09/2016
 
         @param[in] pVal - A number representing the new mass of the Physics Object
-                          This must be > 0
+                          This must be >= 0
 
         Example:
 
@@ -479,14 +499,11 @@ PhysicsObject.prototype = {
         if (typeof pVal !== "number")
             throw new Error("Can not set mass to " + pVal + " (Type '" + typeof pVal + "') Please use a number");
 
-        //Check the mass is not <= 0
-        if (pVal <= 0.0001) pVal = 0.0001;
-
         //Set the mass value
-        this.__Internal__Dont__Modify__.mass = pVal;
+        this.__Internal__Dont__Modify__.mass = Math.max(0, pVal);
 
         //Set the inverse mass value
-        this.__Internal__Dont__Modify__.invMass = 1 / pVal;
+        this.__Internal__Dont__Modify__.invMass = 1 / this.__Internal__Dont__Modify__.mass;
     },
 
     /*
@@ -601,7 +618,12 @@ PhysicsObject.prototype = {
     set collider(pCol) {
         //Check if the value is null
         if (pCol === null) {
+            //Nullify the collider object
             this.__Internal__Dont__Modify__.collider = null;
+
+            //Clear the global bounds object
+            this.__Internal__Dont__Modify__.glbBounds = null;
+
             return;
         }
 
@@ -621,6 +643,110 @@ PhysicsObject.prototype = {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+    PhysicsObject : addForce - Add a force to the PhysicsObject, either as a force
+                               or as an impulse
+    23/10/2016
+
+    @param[in] pForce - A Vec2 object containing the force to apply
+    @param[in] pMode - A value defined in the ForceMode object that dictates
+                       how the force value will be treated (Default ForceMode.FORCE)
+
+    Example:
+
+    //Add an explosive force to the player 
+    playerPhysObj.addForce(explosionPos.subtract(playerPhysObj.position).normalize().multi(EXPLOSIVE_FORCE), ForceMode.IMPULSE);
+*/
+PhysicsObject.prototype.addForce = function(pForce, pMode) {
+    //Clean the mode flag
+    if (typeof pMode === "undefined")
+        pMode = ForceMode.FORCE;
+
+    //Switch on the type of force application
+    switch (pMode) {
+        case ForceMode.FORCE:
+            //Add the force to the acceleration
+            this.__Internal__Dont__Modify__.acc.addSet(pForce);
+            break;
+        case ForceMode.IMPULSE:
+            //Add the force to the velocity
+            this.__Internal__Dont__Modify__.vel.addSet(pForce);
+            break;
+        default:
+            throw new Error("Can not apply force to Physics Object " + this + " with the mode " + pMode + " (Type '" + typeof pMode + "') Please use a value described in the ForceMode object");
+    }
+};
+
+/*
+    PhysicsObject : addTorque - Add a rotational force to the PhysicsObject, either as
+                                a force or as an impulse
+    23/10/2016
+
+    @param[in] pTorque - A number defining the rotational force to apply 
+    @param[in] pMode - A value defined in the ForceMode object that dictates
+                       how the force value will be treated (Default ForceMode.FORCE)
+
+    Example:
+
+    //Add sudden rotational force to the player
+    playerPhysObj.addTorque(FORCE_VALUE, ForceMode.IMPULSE);
+*/
+PhysicsObject.prototype.addTorque = function(pTorque, pMode) {
+    //Clean the mode flag
+    if (typeof pMode === "undefined")
+        pMode = ForceMode.FORCE;
+
+    //Switch on the type of force application
+    switch (pMode) {
+        case ForceMode.FORCE:
+            //Add the force to the acceleration
+            this.__Internal__Dont__Modify__.angAcc += pTorque;
+            break;
+        case ForceMode.IMPULSE:
+            //Add the force to the velocity
+            this.__Internal__Dont__Modify__.angVel += pTorque;
+            break;
+        default:
+            throw new Error("Can not apply torque to Physics Object " + this + " with the mode " + pMode + " (Type '" + typeof pMode + "') Please use a value described in the ForceMode object");
+    }
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                Pipeline Functions                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    PhysicsObject : update - Update the PhysicsObject, applying queued forces.
+                             This is called by the Physics Manager.
+    23/10/2016
+
+    @param[in] pDelta - The delta time for the current cycle
+*/
+PhysicsObject.prototype.update = function(pDelta) {
+    //Apply the drag values
+    this.__Internal__Dont__Modify__.acc.addSet(this.__Internal__Dont__Modify__.vel.negative.multiSet(this.__Internal__Dont__Modify__.drag));
+    this.__Internal__Dont__Modify__.angAcc += -this.__Internal__Dont__Modify__.angVel * this.__Internal__Dont__Modify__.angDrag;
+
+    //Add the force values
+    this.__Internal__Dont__Modify__.vel.addSet(this.__Internal__Dont__Modify__.acc.multi(pDelta));
+    this.__Internal__Dont__Modify__.angVel += this.__Internal__Dont__Modify__.angAcc * pDelta;
+
+    //Modify the position and rotation values by velocity
+    this.__Internal__Dont__Modify__.pos.addSet(this.__Internal__Dont__Modify__.vel.muti(pDelta));
+    this.__Internal__Dont__Modify__.rot += this.__Internal__Dont__Modify__.angVel * pDelta;
+
+    //Update the bounds object
+    this.__Internal__Dont__Modify__.glbBounds = (this.__Internal__Dont__Modify__.collider instanceof ColliderBase ?
+        this.__Internal__Dont__Modify__.collider.__Internal__Dont__Modify__.bounds.getGlobalBounds(createTranslationMat(this.__Internal__Dont__Modify__.pos.x, this.__Internal__Dont__Modify__.pos.y)) :
+        null);
+
+    //Reset the acceleration values
+    this.__Internal__Dont__Modify__.acc.reset();
+    this.__Internal__Dont__Modify__.angAcc = 0;
+};
+
+/*
     PhysicsObject : collidesWith - Checks if this PhysicsObject intersects
                                    with another. This is called by the Physics
                                    Manager.
@@ -633,11 +759,15 @@ PhysicsObject.prototype = {
 */
 PhysicsObject.prototype.collidesWith = function(pOther) {
     //Check the objects colliders are valid
-    if (this.collider === null || pOther.collider === null)
+    if (this.__Internal__Dont__Modify__.collider === null || pOther.__Internal__Dont__Modify__.collider === null)
+        return null;
+
+    //Preform preliminary check for collision
+    if (!this.__Internal__Dont__Modify__.glbBounds.isIntersecting(pOther.__Internal__Dont__Modify__.glbBounds))
         return null;
 
     //Find the collision test to preform
-    switch (this.collider.type | pOther.collider.type) {
+    switch (this.__Internal__Dont__Modify__.collider.type | pOther.__Internal__Dont__Modify__.collider.type) {
         case ColliderType.BOX:
 
             break;
@@ -1337,4 +1467,14 @@ ExtendProperties(ShapeCollider, {
 ShapeCollider.prototype.updateBounds = function() {
     //Assign the bounds object the collision points
     this.__Internal__Dont__Modify__.bounds.points = this.__Internal__Dont__Modify__.points;
+
+    //Reset the center of mass
+    this.__Internal__Dont__Modify__.COMOffset.reset();
+
+    //Add all cordinate values together
+    for (var i = 0; i < this.__Internal__Dont__Modify__.points.length; i++)
+        this.__Internal__Dont__Modify__.COMOffset.addSet(this.__Internal__Dont__Modify__.points[i]);
+
+    //Take the avergae to find the center of mass
+    this.__Internal__Dont__Modify__.COMOffset.divSet(this.__Internal__Dont__Modify__.points.length);
 };
