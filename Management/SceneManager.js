@@ -12,7 +12,7 @@
  *      Version: 1.0
  *
  *      Requires:
- *      Camera.js
+ *      Camera.js, Physics.js
  *
  *      Purpose:
  *      Manage a number of scenes that allow for the
@@ -135,6 +135,9 @@ SceneManager.prototype = {
         //If there is already a scene loaded, dispose of it
         if (this.__Internal__Dont__Modify__.activeScene !== null)
             this.__Internal__Dont__Modify__.activeScene.dispose();
+
+        //Start the new Physics Scene
+        Physics.startNewScene();
 
         //Create the new active scene
         this.__Internal__Dont__Modify__.activeScene = new this.__Internal__Dont__Modify__.sceneMap[identifier]()
@@ -548,7 +551,7 @@ SceneBase.prototype.internalUpdate = function(pDelta, pGraphics, pCamera) {
         this.objects[i].updateComponents(pDelta);
 
     /*--------------------Call Physics Update--------------------*/
-    //TODO
+    Physics.update(pDelta);
 
     /*--------------------Call Late Update Componenets on all Game Objects--------------------*/
     for (var i = this.objects.length - 1; i >= 0; i--)

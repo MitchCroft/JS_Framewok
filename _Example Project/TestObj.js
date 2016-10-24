@@ -61,14 +61,32 @@ TestObj.prototype.start = function() {
     //Add a shape component to the current object
     var shapeComp = this.createComponent("ShapeComponent");
 
+    //Generate a random size for the shape
+    var size = Math.random() * (TEST_OBJ_SIZE_MAX - TEST_OBJ_SIZE_MIN) + TEST_OBJ_SIZE_MIN;
+
     //Create a random shape of random size
     shapeComp.points = getPrimitivePoints(
         Math.floor(Math.random() * 3),
-        Math.random() * (TEST_OBJ_SIZE_MAX - TEST_OBJ_SIZE_MIN) + TEST_OBJ_SIZE_MIN
+        size
     );
 
     //Generate a random color for the fill
     shapeComp.fillColor = new Color().randomize();
+
+    //Add a physics component to the shape
+    var phys = this.createComponent("PhysicsComponent");
+
+    //Kill drag
+    phys.drag = 0;
+    phys.angularDrag = 0;
+
+    phys.addTorque(360, ForceMode.IMPULSE);
+
+    //Add a circle collider to phys
+    phys.collider = new CircleCollider();
+
+    //Set the radius of the circle collider
+    phys.collider.radius = size / 2;
 
     //Generate a random rotation for the object
     this.transform.rotation = Math.random() * 360;

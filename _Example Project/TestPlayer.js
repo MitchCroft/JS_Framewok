@@ -70,6 +70,18 @@ TestPlayer.prototype.start = function() {
     this.shapeComp.fillColor = new Color("#F00");
     this.shapeComp.borderColor = new Color();
 
+    //Add a physics component to the player
+    var phys = this.createComponent("PhysicsComponent");
+
+    //Set the player to be kinematic
+    phys.isKinematic = true;
+
+    //Assign a circle collider to the physics component
+    phys.collider = new CircleCollider();
+
+    //Set the radius of the circle collider
+    phys.collider.radius = this.size / 2;
+
     //Create a child object 
     var childObj = new GameObject("Player Child");
 

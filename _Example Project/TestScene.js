@@ -30,6 +30,9 @@ function TestScene() {
     //Define the number of test objects to create
     this.testObjectCount = 250;
 
+    //Store the test objects inside an array
+    this.testObjects = [];
+
     //Define the speed with which the camera moves
     this.cameraSpeed = 2;
 
@@ -80,7 +83,13 @@ TestScene.prototype.startUp = function() {
 
         //Add the object to the folder
         obj.transform.parent = holder.transform;
+
+        //Add the obejct to the test objects array
+        this.testObjects[this.testObjects.length] = obj;
     }
+
+    //Set gravity to pull objects down
+    Physics.gravity = new Vec2(0, 10);
 };
 
 /*
@@ -108,6 +117,17 @@ TestScene.prototype.update = function(pDelta) {
 
     //Lerp the camera position towards the player
     sceneManager.camera.position = sceneManager.camera.position.lerp(playerPos, this.cameraSpeed * pDelta);
+
+    //Check if the additional objects have fallen outside of the world radius
+    for (var i = this.testObjects.length - 1; i >= 0; i--) {
+        if (this.testObjects[i].transform.position.sqrMag > this.worldRadius * this.worldRadius) {
+            //Destroy the game object
+            this.testObjects[i].destroy();
+
+            //Remove reference from the list
+            this.testObjects.splice(i, 1);
+        }
+    }
 };
 
 /*

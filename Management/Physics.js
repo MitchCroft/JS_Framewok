@@ -12,7 +12,7 @@
  *      Version: 1.0
  *
  *      Requires:
- *      Mat3.js
+ *      Vec2.js
  *
  *      Purpose:
  *      Manage Physics for a number of objects that can be added
@@ -36,7 +36,7 @@ var Physics = new function() {
         //Store ID progress for the current physics scene
         nextID: -1,
 
-        //Store an array of the Rigid Body Physics Objects in the active physics scene
+        //Store an array of the Physics Objects in the active physics scene
         physObjs: [],
 
         //How often physics calculations are run (Higher numbers will be less precise Physics but use less resources)
@@ -69,15 +69,15 @@ var Physics = new function() {
     };
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Property Definitions                                         ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 Physics.__Internal__Dont__Modify__.extender({
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                               Property Definitions                                         ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /*
-        Physics : gravity - Get the value of gravity effecting all Rigid Body Physics Objects
+        Physics : gravity - Get the value of gravity effecting all Physics Objects
         30/09/2016
 
         @return Vec2 - Returns a Vec2 object with the axis values
@@ -92,7 +92,7 @@ Physics.__Internal__Dont__Modify__.extender({
     },
 
     /*
-        Physics : gravity - Set the direction and magnitude of gravity effecting all Rigid Body Physics Objects
+        Physics : gravity - Set the direction and magnitude of gravity effecting all Physics Objects
         30/09/2016
 
         @param[in] pGrav - A Vec2 object holding the gravity axis values
@@ -152,12 +152,207 @@ Physics.__Internal__Dont__Modify__.extender({
     /////                                                                                                            ////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //TODO
+    /*
+        Physics : update - Update the current physics scene at the set time step
+        24/10/2016
+
+        @param[in] pDelta - The delta time for the current cycle
+
+        Example:
+
+        //Update the physics manager
+        Physics.update(deltaTime);
+    */
+    update: function(pDelta) {
+        //Add the delta time to the accumulation
+        this.__Internal__Dont__Modify__.timeAccumulation += pDelta;
+
+        //Exit if not enough time has passed for the physics simulation to be run
+        if (this.__Internal__Dont__Modify__.timeAccumulation < this.__Internal__Dont__Modify__.timeStep)
+            return;
+
+        //Update all of the Physics Objects in the scene
+        for (var i = this.__Internal__Dont__Modify__.physObjs.length - 1; i >= 0; i--) {
+            //Check the current object is active
+            if (!this.__Internal__Dont__Modify__.physObjs[i].enabled) continue;
+
+            //Update the object
+            this.__Internal__Dont__Modify__.physObjs[i].update(this.__Internal__Dont__Modify__.timeAccumulation, this.__Internal__Dont__Modify__.gravity);
+        }
+
+        //Store an array of collision events to resolve
+        var collisions = [];
+
+        //Run collision checks for all Physics Objects
+        var recieved = null;
+        for (var i = 0; i < this.__Internal__Dont__Modify__.physObjs.length; i++) {
+            //Check the current object is active
+            if (!this.__Internal__Dont__Modify__.physObjs[i].enabled) continue;
+
+            for (var j = i + 1; j < this.__Internal__Dont__Modify__.physObjs.length; j++) {
+                //Check the current object is active
+                if (!this.__Internal__Dont__Modify__.physObjs[j].enabled) continue;
+
+                //Check if a collision occurs
+                if ((recieved = this.__Internal__Dont__Modify__.physObjs[i].collidesWith(this.__Internal__Dont__Modify__.physObjs[j])) !== null)
+                    collisions[collisions.length] = recieved;
+            }
+        }
+
+        //Resolve the collision events
+        for (var i = collisions.length - 1; i >= 0; i--) {
+            //TODO
+        }
+
+        //Reset the time accumulated
+        this.__Internal__Dont__Modify__.timeAccumulation = 0;
+    },
+
+    /*
+        Physics : startNewScene - Remove the previous objects from the physics scene and 
+                                  prepare for new Physics Objects
+        24/10/2016
+
+        Example:
+
+        //Clear previous physics obejcts
+        Physics.startNewScene();
+
+        //TODO: Load the next scenes required physics elements
+    */
+    startNewScene: function() {
+        //Loop through the current objects and reset their IDs
+        for (var i = this.__Internal__Dont__Modify__.physObjs.length - 1; i >= 0; i--)
+            this.__Internal__Dont__Modify__.physObjs[i].__Internal__Dont__Modify__.ID = -1;
+
+        //Clear the list of objects
+        this.__Internal__Dont__Modify__.physObjs = [];
+
+        //Reset the next ID to be given out
+        this.__Internal__Dont__Modify__.nextID = -1;
+    },
+
+    /*
+        Physics : addObject - Add a Physics Object to the current Physics Scene
+        24/10/2016
+
+        @param[in] pObj - A reference to the Physics Object to add to the scene
+
+        Example:
+
+        //Add the player's physics object to the phsyics scene
+        Physics.addObject(playerPhysObj);
+    */
+    addObject: function(pObj) {
+        //Check the object is valid
+        if (!pObj instanceof PhysicsObject)
+            throw new Error("Can not add " + pObj + " (Type: '" + typeof pObj + "') to the Physics Scene. Please only use PhysicsObject instances");
+
+        //Check the object is ready to be re-added
+        if (pObj.__Internal__Dont__Modify__.ID !== -1)
+            throw new Error("Can not add " + pObj + " to the Physics Scene as it already belongs to another (Physics Object ID: " + pObj.__Internal__Dont__Modify__.ID + ")");
+
+        //ID stamp the object
+        pObj.__Internal__Dont__Modify__.ID = ++this.__Internal__Dont__Modify__.nextID;
+
+        //Add the physics object to the scene
+        this.__Internal__Dont__Modify__.physObjs.push(pObj);
+    },
+
+    /*
+        Physics : removeObject - Remove a Physics Object from the current Physics Scene
+        24/10/2016
+
+        @param[in] pObj - A reference to the Physics Object to remove from the scene
+
+        Example:
+
+        //Remove the player from the physics scene
+        Physics.removeObject(playerPhysObj);
+
+        //TODO: Load next scene and add the player back to the physics manager
+    */
+    removeObject: function(pObj) {
+        //Check there are objects that can be removed
+        if (!this.__Internal__Dont__Modify__.physObjs.length)
+            throw new Error("Can not remove " + pObj + " as there are no objects in the Physics Scene");
+
+        //Check the obejct is a physics object
+        if (!pObj instanceof PhysicsObject)
+            throw new Error("Can not remove " + pObj + " (Type: '" + typeof pObj + "') from the Physics Scene. Please only use PhysicsObject instances");
+
+        //Check the ID is in range of the currently deployed 
+        if (pObj.__Internal__Dont__Modify__.ID > this.__Internal__Dont__Modify__.nextID)
+            throw new Error("The ID stamp on " + pObj + " (" + pObj.__Internal__Dont__Modify__.ID + " is outside of the range deployed by the Physics Manager (" + (this.__Internal__Dont__Modify__.nextID + 1) + ") Are you sure this Physics Object belongs to the current Physics Scene?");
+
+        //Check if the Physics Object belongs to a Physics Scene
+        else if (pObj.__Internal__Dont__Modify__.ID === -1)
+            throw new Error("Can not remove " + pObj + " as it does not belong to any Physics Scene");
+
+        //Get the direction with which to search from
+        var dir = (pObj.__Internal__Dont__Modify__.ID - this.__Internal__Dont__Modify__.physObjs[0].ID < this.__Internal__Dont__Modify__.physObjs[this.__Internal__Dont__Modify__.physObjs.length - 1].ID - pObj.__Internal__Dont__Modify__.ID ? 1 : -1);
+
+        //Loop through to find the object
+        for (var i = (dir === 1 ? 0 : this.__Internal__Dont__Modify__.physObjs.length - 1); i >= 0 && i < this.__Internal__Dont__Modify__.physObjs.length; i += dir) {
+            //Look for matching objects
+            if (this.__Internal__Dont__Modify__.physObjs[i] === pObj) {
+                //Reset the ID of the object
+                pObj.__Internal__Dont__Modify__.ID = -1;
+
+                //Remove the object from the list
+                this.__Internal__Dont__Modify__.physObjs.splice(i, 1);
+
+                //Exit the function
+                return;
+            }
+        }
+
+        //Throw error if search occured with not match found
+        throw new Error("Physics removeObject call failed when using " + pObj + " (ID: " + pObj.__Internal__Dont__Modify__.ID + ")");
+    },
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
 /////                                                 Object Definition                                          ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *      Name: CollisionData
+ *      Author: Mitchell Croft
+ *      Date: 24/10/2016
+ *
+ *      Requires:
+ *      Vec2.js
+ *
+ *      Purpose:
+ *      Provide information about a collision event between
+ *      two Physics Objects. Used internally by the Physics
+ *       Manager.
+ **/
+
+/*
+    CollisionData : Constructor - Initialise with default values
+    24/10/2016
+
+    @param[in] pFirst - A reference to the first Physics Object that was involved
+                        in the collision
+    @param[in] pSecond - A reference to the second Physics Object that was involved
+                         in the collision
+*/
+function CollisionData(pFirst, pSecond) {
+    //Store the objects involved in the collision
+    this.first = (pFirst instanceof PhysicsObject ? pFirst : null);
+    this.second = (pSecond instanceof PhysicsObject ? pSecond : null);
+
+    //Store information about the overlap
+    this.overlap = new Vec2();
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                               Force Mode Definition                                        ////
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -210,6 +405,9 @@ function PhysicsObject() {
         //Store the ID of the Physics Object in the Physics Scene
         ID: -1,
 
+        //Store the global bounding box of the collider attached
+        glbBounds: null,
+
         //Store the flag for if this object is kinematic
         kino: false,
 
@@ -237,9 +435,6 @@ function PhysicsObject() {
 
         //Store a reference to the collider used on this object
         collider: null,
-
-        //Store the global bounding box of the collider attached
-        glbBounds: null,
     };
 };
 
@@ -325,6 +520,12 @@ PhysicsObject.prototype = {
 
         //Set the state
         this.__Internal__Dont__Modify__.kino = pState;
+
+        //Reset the velocity and acceleration values
+        this.__Internal__Dont__Modify__.acc.reset();
+        this.__Internal__Dont__Modify__.vel.reset();
+        this.__Internal__Dont__Modify__.angAcc = 0;
+        this.__Internal__Dont__Modify__.angVel = 0;
     },
 
     /*
@@ -612,7 +813,7 @@ PhysicsObject.prototype = {
 
         Example:
 
-        //Set the players physics object to use a square collider
+        //Set the players physics object to use a box collider
         playerPhysObj.collider = new BoxCollider();
     */
     set collider(pCol) {
@@ -665,7 +866,7 @@ PhysicsObject.prototype.addForce = function(pForce, pMode) {
     switch (pMode) {
         case ForceMode.FORCE:
             //Add the force to the acceleration
-            this.__Internal__Dont__Modify__.acc.addSet(pForce);
+            this.__Internal__Dont__Modify__.acc.addSet(pForce.div(this.__Internal__Dont__Modify__.mass));
             break;
         case ForceMode.IMPULSE:
             //Add the force to the velocity
@@ -721,29 +922,36 @@ PhysicsObject.prototype.addTorque = function(pTorque, pMode) {
                              This is called by the Physics Manager.
     23/10/2016
 
-    @param[in] pDelta - The delta time for the current cycle
+    @param[in] pDelta - The delta time for the current physics cycle
+    @param[in] pGravity - A Vec2 obejct defining the strength and direction of gravity
 */
-PhysicsObject.prototype.update = function(pDelta) {
-    //Apply the drag values
-    this.__Internal__Dont__Modify__.acc.addSet(this.__Internal__Dont__Modify__.vel.negative.multiSet(this.__Internal__Dont__Modify__.drag));
-    this.__Internal__Dont__Modify__.angAcc += -this.__Internal__Dont__Modify__.angVel * this.__Internal__Dont__Modify__.angDrag;
+PhysicsObject.prototype.update = function(pDelta, pGravity) {
+    //Check if the Physics Object is effected by physics
+    if (!this.__Internal__Dont__Modify__.kino) {
+        //Apply the gravity force
+        this.addForce(pGravity);
 
-    //Add the force values
-    this.__Internal__Dont__Modify__.vel.addSet(this.__Internal__Dont__Modify__.acc.multi(pDelta));
-    this.__Internal__Dont__Modify__.angVel += this.__Internal__Dont__Modify__.angAcc * pDelta;
+        //Apply the drag values
+        this.__Internal__Dont__Modify__.acc.addSet(this.__Internal__Dont__Modify__.vel.negative.multiSet(this.__Internal__Dont__Modify__.drag));
+        this.__Internal__Dont__Modify__.angAcc += -this.__Internal__Dont__Modify__.angVel * this.__Internal__Dont__Modify__.angDrag;
 
-    //Modify the position and rotation values by velocity
-    this.__Internal__Dont__Modify__.pos.addSet(this.__Internal__Dont__Modify__.vel.muti(pDelta));
-    this.__Internal__Dont__Modify__.rot += this.__Internal__Dont__Modify__.angVel * pDelta;
+        //Add the force values
+        this.__Internal__Dont__Modify__.vel.addSet(this.__Internal__Dont__Modify__.acc.multi(pDelta));
+        this.__Internal__Dont__Modify__.angVel += this.__Internal__Dont__Modify__.angAcc * pDelta;
+
+        //Modify the position and rotation values by velocity
+        this.__Internal__Dont__Modify__.pos.addSet(this.__Internal__Dont__Modify__.vel.multi(pDelta));
+        this.__Internal__Dont__Modify__.rot += this.__Internal__Dont__Modify__.angVel * pDelta;
+
+        //Reset the acceleration values
+        this.__Internal__Dont__Modify__.acc.reset();
+        this.__Internal__Dont__Modify__.angAcc = 0;
+    }
 
     //Update the bounds object
     this.__Internal__Dont__Modify__.glbBounds = (this.__Internal__Dont__Modify__.collider instanceof ColliderBase ?
         this.__Internal__Dont__Modify__.collider.__Internal__Dont__Modify__.bounds.getGlobalBounds(createTranslationMat(this.__Internal__Dont__Modify__.pos.x, this.__Internal__Dont__Modify__.pos.y)) :
         null);
-
-    //Reset the acceleration values
-    this.__Internal__Dont__Modify__.acc.reset();
-    this.__Internal__Dont__Modify__.angAcc = 0;
 };
 
 /*
@@ -759,20 +967,60 @@ PhysicsObject.prototype.update = function(pDelta) {
 */
 PhysicsObject.prototype.collidesWith = function(pOther) {
     //Check the objects colliders are valid
-    if (this.__Internal__Dont__Modify__.collider === null || pOther.__Internal__Dont__Modify__.collider === null)
+    if (this.collider === null || pOther.collider === null)
         return null;
 
     //Preform preliminary check for collision
     if (!this.__Internal__Dont__Modify__.glbBounds.isIntersecting(pOther.__Internal__Dont__Modify__.glbBounds))
         return null;
 
-    //Find the collision test to preform
-    switch (this.__Internal__Dont__Modify__.collider.type | pOther.__Internal__Dont__Modify__.collider.type) {
-        case ColliderType.BOX:
+    //Store the return data
+    var data = null;
 
+    //Find the collision test to preform
+    switch (this.collider.type | pOther.collider.type) {
+        case ColliderType.BOX:
+            //Get the half extent information
+            var halfExtent1 = this.collider.extents.div(2);
+            var halfExtent2 = pOther.collider.extents.div(2);
+
+            //Check for collision
+            if (!(this.position.x - halfExtent1.x >= pOther.position.x + halfExtent2.x ||
+                    this.position.y - halfExtent1.y >= pOther.position.y + halfExtent2.y ||
+                    pOther.position.x - halfExtent2.x >= this.position.x + halfExtent1.x ||
+                    pOther.position.y - halfExtent2.y >= this.position.y + halfExtent1.y)) {
+
+                //Get the seperation vector
+                var seperation = pother.position.subtract(this.position);
+
+                //Create the collision data object
+                data = new CollisionData(this, pOther);
+
+                //Store the overlap vector
+                //TODO
+            }
+
+            //Get the seperation vector
+            var seperation = pOther.position.subtract(this.position);
             break;
         case ColliderType.CIRCLE:
+            //Store the minimum distance
+            var min = this.collider.radius + pOther.collider.radius;
 
+            //Get the seperation vector
+            var seperation = pOther.position.subtract(this.position);
+
+            //Store the distance the objects are apart
+            var dist = seperation.mag;
+
+            //Check for collision
+            if (dist < min) {
+                //Create the collision data object
+                data = new CollisionData(this, pOther);
+
+                //Store the overlap vector
+                data.overlap = seperation.normalize().multi(min - dist);
+            }
             break;
         case ColliderType.SHAPE:
 
@@ -789,6 +1037,9 @@ PhysicsObject.prototype.collidesWith = function(pOther) {
         default:
             throw new Error("Can not test collision between the types " + this.collider.type + " and " + pOther.collider.type + ". Please check colliders are correct");
     }
+
+    //Return the collision data
+    return data;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1294,7 +1545,7 @@ ExtendProperties(CircleCollider, {
     */
     set radius(pVal) {
         //Check the value is a number
-        if (typeof pVal === "number")
+        if (typeof pVal !== "number")
             throw new Error("Can not set the radius of the Circle Collider to " + pVal + " (Type '" + typeof pVal + "') Please use a number");
 
         //Set the radius 
