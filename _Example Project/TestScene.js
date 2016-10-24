@@ -89,7 +89,7 @@ TestScene.prototype.startUp = function() {
     }
 
     //Set gravity to pull objects down
-    Physics.gravity = new Vec2(0, 10);
+    Physics.gravity = new Vec2(0, 9.82);
 
     //Uncap the timestep
     Physics.timeStep = 0;
@@ -125,7 +125,8 @@ TestScene.prototype.update = function(pDelta) {
     for (var i = this.testObjects.length - 1; i >= 0; i--) {
         if (this.testObjects[i].transform.position.sqrMag > this.worldRadius * this.worldRadius) {
             //Destroy the game object
-            this.testObjects[i].destroy();
+            //this.testObjects[i].destroy();
+            this.testObjects[i].transform.y *= -1;
 
             //Remove reference from the list
             this.testObjects.splice(i, 1);

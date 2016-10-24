@@ -127,7 +127,7 @@ Physics.__Internal__Dont__Modify__.extender({
     },
 
     /*
-        Phsyics : timeStep - Set the current time step value to determine how often Physics calculations are run
+        Physics : timeStep - Set the current time step value to determine how often Physics calculations are run
         30/09/2016
 
         @param[in] pVal - A number representing the time step in seconds
@@ -201,7 +201,21 @@ Physics.__Internal__Dont__Modify__.extender({
 
         //Resolve the collision events
         for (var i = collisions.length - 1; i >= 0; i--) {
-            //TODO
+            //Extract the Physics Objects from the data object
+            var first = collisions[i].first;
+            var second = collisions[i].second;
+
+            //Check if either of the objects in the collision are a trigger
+            if (first.collider.isTrigger || second.collider.isTrigger) {
+                //If the first is a trigger
+                if (first.collider.isTrigger) first.raiseTriggerEvents(second);
+
+                //If the second is a trigger
+                if (second.collider.isTrigger) second.raiseTriggerEvents(first);
+
+                //Continue to other collision events
+                continue;
+            }
         }
 
         //Reset the time accumulated
@@ -405,6 +419,9 @@ function PhysicsObject() {
         //Store the ID of the Physics Object in the Physics Scene
         ID: -1,
 
+        //Store an array of events to raise in the event of a trigger 
+        triggerEvents: [],
+
         //Store the global bounding box of the collider attached
         glbBounds: null,
 
@@ -436,6 +453,9 @@ function PhysicsObject() {
         //Store a reference to the collider used on this object
         collider: null,
     };
+
+    //Store any user desired data, to be used with associating Physics Objects with custom code
+    this.storage = null;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -911,6 +931,83 @@ PhysicsObject.prototype.addTorque = function(pTorque, pMode) {
     }
 };
 
+/*
+    PhysicsObject : addTriggerEvent - Add a function to be called if something 
+                                      triggers this Physics Object
+    24/10/2016
+
+    @param[in] pCb - A function to be called in the event of a trigger collision
+                     Function takes in the Physics Object that raised the trigger
+                     events
+
+    Example:
+
+    //Add a callback function on the bullet Physics Object to flag the player as dead
+    bulletPhysObj.addtriggerEvent(function(pObj) {
+        //Treat storage object as reference to the players Game Object
+        if (pObj.storage.tag === "Player") {
+            //TODO: Flag the player as dead
+        }
+    });
+*/
+PhysicsObject.prototype.addTriggerEvent = function(pCb) {
+    //Check the value passed in is a function
+    if (typeof pCb !== "function")
+        throw new Error("Can not assign " + pCb + " (Type: '" + typeof pCb + "') as a trigger event function. Please use a function which takes in the Physics Object that triggered the event");
+
+    //Add to the back of the trigger event list
+    this.__Internal__Dont__Modify__.triggerEvents.push(pCb);
+};
+
+/*
+    PhysicsObject : removeTriggerEvent - Remove a function from being called if 
+                                         something triggers this Physics Object
+    24/10/2016
+
+    @param[in] pCb - A reference to the function that is to be removed from the
+                     trigger event list
+
+    @return bool - Returns true if the trigger event was removed succesfully
+
+    Example:
+
+    //Remove the trigger callback from the bullet
+    bulletPhysObj.removeTriggerEvent(killPlayerEvent);
+*/
+PhysicsObject.prototype.removeTriggerEvent = function(pCb) {
+    //Check the value passed in is a function
+    if (typeof pCb !== "function")
+        throw new Error("Can not remove " + pCb + " (Type: '" + typeof pCb + "') as a trigger event as it is not a function and should not be in the list.");
+
+    //Loop through and find the function
+    for (var i = this.__Internal__Dont__Modify__.triggerEvents.length - 1; i >= 0; i--) {
+        if (this.__Internal__Dont__Modify__.triggerEvents[i] === pCb) {
+            //Splice the event list at this point
+            this.__Internal__Dont__Modify__.triggerEvents.splice(i, 1);
+
+            //Leave the function
+            return true;
+        }
+    }
+
+    //Default return not found
+    return false;
+};
+
+/*
+    PhysicsObject : clearTriggerEvents - Clear all trigger events 
+    24/10/2016
+
+    Example:
+
+    //Clear all trigger events associated with the bullet
+    bulletPhysObj.clearTriggerEvents();
+*/
+PhysicsObject.prototype.clearTriggerEvents = function() {
+    //Reset the event list
+    this.__Internal__Dont__Modify__.triggerEvents = [];
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
 /////                                                Pipeline Functions                                          ////
@@ -1019,7 +1116,7 @@ PhysicsObject.prototype.collidesWith = function(pOther) {
                 data = new CollisionData(this, pOther);
 
                 //Store the overlap vector
-                data.overlap = seperation.normalize().multi(min - dist);
+                data.overlap = seperation.normalize().multiSet(min - dist);
             }
             break;
         case ColliderType.SHAPE:
@@ -1040,6 +1137,19 @@ PhysicsObject.prototype.collidesWith = function(pOther) {
 
     //Return the collision data
     return data;
+};
+
+/*
+    PhysicsObject : raiseTriggerEvents - Raises all trigger events associated with the 
+                                         Physics Object
+    24/10/2016
+
+    @param[in] pObj - A reference to the Physics Object which triggered the events to fire
+*/
+PhysicsObject.prototype.raiseTriggerEvents = function(pObj) {
+    //Loop through all trigger events and raise them
+    for (var i = this.__Internal__Dont__Modify__.triggerEvents.length - 1; i >= 0; i--)
+        this.__Internal__Dont__Modify__.triggerEvents[i](pObj);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
