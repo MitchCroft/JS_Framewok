@@ -78,9 +78,9 @@ TestObj.prototype.start = function() {
 
     //Kill drag
     phys.drag = 0;
-    phys.angularDrag = 0;
+    phys.angularDrag = 0.1;
 
-    phys.addTorque(360, ForceMode.IMPULSE);
+    phys.addTorque(Math.random() * 180 + 180 * (Math.random() > 0.5 ? 1 : -1), ForceMode.IMPULSE);
 
     //Add a circle collider to phys
     phys.collider = new CircleCollider();

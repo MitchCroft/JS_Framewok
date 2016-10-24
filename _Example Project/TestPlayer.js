@@ -118,7 +118,7 @@ TestPlayer.prototype.update = function(pDelta) {
     this.transform.position = this.transform.position.addSet(this.transform.forward.multi(Input.getAxis("vertical") * this.moveSpeed * pDelta));
 
     //Adjust the camera's zoom
-    sceneManager.camera.distance = Input.getAxis("zoom") * 14 + 1;
+    sceneManager.camera.distance = Input.getAxis("zoom") * 19 + 1;
 
     //Rotate the child object
     this.findObjectWithTag("Player Child").transform.localRotation += 90 * pDelta;

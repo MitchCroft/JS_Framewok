@@ -90,6 +90,9 @@ TestScene.prototype.startUp = function() {
 
     //Set gravity to pull objects down
     Physics.gravity = new Vec2(0, 10);
+
+    //Uncap the timestep
+    Physics.timeStep = 0;
 };
 
 /*
