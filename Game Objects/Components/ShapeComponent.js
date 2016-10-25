@@ -40,7 +40,7 @@
 */
 function ShapeComponent() {
     //Call the Component Base Constructor for initial setup.
-    ComponentBase.call(this, -1);
+    ComponentBase.call(this, ComponentID.SHAPE);
 
     //Flags if the bounds of the component needs to be updated
     this.__Internal__Dont__Modify__.boundsOutdated = true;

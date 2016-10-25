@@ -58,6 +58,18 @@ sceneManager.activeScene = "Main";
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//Store the avergae frame rate to show a readable number
+var avgFrames = 0;
+
+//Store a timer value to track passage of a second
+var fpsTimer = 0;
+
+//Store the sum of the evaluated frames per second
+var fpsSum = 0;
+
+//Store the number of iterations that have occured in order to take the average
+var fpsIterations = 0;
+
 /*
     updateLoop - Update the input and scene manager to allow for rendering of the scene
     28/09/2016
@@ -71,9 +83,27 @@ function updateLoop(pDelta) {
     //Update the Scene Manager
     sceneManager.update(pDelta);
 
+    //Update the FPS counter
+    fpsTimer += pDelta;
+
+    //Add onto the sum
+    fpsSum += 1 / pDelta;
+
+    //Increment the counter
+    fpsIterations++;
+
+    //Check if a second has passed
+    if (fpsTimer >= 1) {
+        //Take the average
+        avgFrames = fpsSum / fpsIterations;
+
+        //Reset the values
+        fpsTimer = fpsSum = fpsIterations = 0;
+    }
+
     //Display the FPS
     graphics.draw.font = "36px Arial";
-    graphics.outlineText("FPS: " + (1 / pDelta).toFixed(0), 5, 40, 'red');
+    graphics.outlineText("FPS: " + avgFrames.toFixed(0), 5, 40, 'red');
 };
 
 //Assign the function to the State Manager

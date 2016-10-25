@@ -40,7 +40,7 @@
 */
 function PhysicsComponent() {
     //Call the Component Base Constructor for initial setup.
-    ComponentBase.call(this, -2);
+    ComponentBase.call(this, ComponentID.PHYSICS);
 
     //Store a reference to the Physics Body this component wraps
     this.__Internal__Dont__Modify__.body = null;
@@ -313,14 +313,13 @@ ExtendProperties(PhysicsComponent, {
     set collider(pCol) {
         this.__Internal__Dont__Modify__.body.collider = pCol;
     },
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////                                                                                                            ////
-    /////                                                 Force Functions                                            ////
-    /////                                                                                                            ////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 });
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                                 Force Functions                                            ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
         PhysicsComponent : addForce - Add a force to hte Physics Component, either as a force

@@ -158,7 +158,7 @@ function Graphics(pWidth, pHeight, pID, pResizeCallback) {
         //Check if the image has already been loaded
         if (!(pFilepath in imageMap)) {
             //Create a new image
-            imageMap[pFilepath] = document.createElement("img");
+            imageMap[pFilepath] = new Image();
             imageMap[pFilepath].src = pFilepath;
         }
 

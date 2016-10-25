@@ -14,7 +14,7 @@
  *      the pre-made components
  **/
 
-var ComponentID = { SHAPE: -1, PHYSICS: -2 };
+var ComponentID = { SHAPE: -1, PHYSICS: -2, PARTICLES: -3 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
