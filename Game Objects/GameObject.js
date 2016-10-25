@@ -268,7 +268,7 @@ GameObject.prototype.addComponent = function(pComp) {
     }
 
     //Set the owner of the component
-    pComp.__Internal__Dont__Modify__.owner = this;
+    pComp.transferOwnership(this);
 
     //Add the component to the list
     this.__Internal__Dont__Modify__.components.push(pComp);
@@ -311,7 +311,7 @@ GameObject.prototype.createComponent = function(pType) {
         throw new Error("Could not create a component of type " + pType + " as it is not a ComponentBase type. Ensure that the type you are trying to create derives from ComponentBase");
 
     //Set the owner of the new object
-    obj.__Internal__Dont__Modify__.owner = this;
+    obj.transferOwnership(this);
 
     //Add the component to the list
     this.__Internal__Dont__Modify__.components.push(obj);
@@ -588,7 +588,7 @@ GameObject.prototype.removeComponent = function(pComp) {
         //Check for the right component
         if (this.__Internal__Dont__Modify__.components[i] === pComp) {
             //Remove the owner value
-            pComp.__Internal__Dont__Modify__.owner = null;
+            pComp.transferOwnership(null);
 
             //Remove the component from the list
             this.__Internal__Dont__Modify__.components.splice(i, 1);
@@ -639,7 +639,7 @@ GameObject.prototype.removeComponentWithID = function(pID) {
             var comp = this.__Internal__Dont__Modify__.components[i];
 
             //Remove the owner from the component
-            comp.__Internal__Dont__Modify__.owner = null;
+            comp.transferOwnership(null);
 
             //Remove the component from the list
             this.__Internal__Dont__Modify__.components.splice(i, 1);
@@ -699,9 +699,9 @@ GameObject.prototype.removeComponentsWithID = function(pID) {
             //Get the array of components to remove
             var comps = this.__Internal__Dont__Modify__.components.splice((dir === 1 ? i : i - count - 1), count);
 
-            //Remove the owner from the ocmponents
+            //Remove the owner from the components
             for (var j = comps.length - 1; j >= 0; j--)
-                comps[j].__Internal__Dont__Modify__.owner = null;
+                comps[j].transferOwnership(null);
 
             //Return the removed components
             return comps;

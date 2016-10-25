@@ -28,7 +28,7 @@ function TestScene() {
     SceneBase.call(this);
 
     //Define the number of test objects to create
-    this.testObjectCount = 250;
+    this.testObjectCount = 1000;
 
     //Store the test objects inside an array
     this.testObjects = [];
@@ -89,7 +89,7 @@ TestScene.prototype.startUp = function() {
     }
 
     //Set gravity to pull objects down
-    Physics.gravity = new Vec2(0, 9.82);
+    //Physics.gravity = new Vec2(0, 9.82);
 
     //Uncap the timestep
     Physics.timeStep = 0;
@@ -123,10 +123,18 @@ TestScene.prototype.update = function(pDelta) {
 
     //Check if the additional objects have fallen outside of the world radius
     for (var i = this.testObjects.length - 1; i >= 0; i--) {
+        //Check if the object is still valid
+        if (this.testObjects[i].disposed) {
+            //Splice from the array
+            this.testObjects.splice(i, 1);
+
+            //Continue on
+            continue;
+        }
+
         if (this.testObjects[i].transform.position.sqrMag > this.worldRadius * this.worldRadius) {
             //Destroy the game object
-            //this.testObjects[i].destroy();
-            this.testObjects[i].transform.y *= -1;
+            this.testObjects[i].destroy();
 
             //Remove reference from the list
             this.testObjects.splice(i, 1);

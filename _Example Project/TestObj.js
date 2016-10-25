@@ -77,10 +77,10 @@ TestObj.prototype.start = function() {
     var phys = this.createComponent("PhysicsComponent");
 
     //Kill drag
-    phys.drag = 0;
+    //phys.drag = 0;
 
     //Add random rotation
-    phys.addTorque(Math.random() * 180 + 180 * (Math.random() > 0.5 ? 1 : -1), ForceMode.IMPULSE);
+    //phys.addTorque(Math.random() * 180 + 180 * (Math.random() > 0.5 ? 1 : -1), ForceMode.IMPULSE);
 
     //Add a circle collider to phys
     phys.collider = new CircleCollider();

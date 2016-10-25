@@ -43,10 +43,7 @@ function PhysicsComponent() {
     ComponentBase.call(this, -2);
 
     //Store a reference to the Physics Body this component wraps
-    this.__Internal__Dont__Modify__.body = new PhysicsObject();
-
-    //Add the physics object to the physics scene
-    Physics.addObject(this.__Internal__Dont__Modify__.body);
+    this.__Internal__Dont__Modify__.body = null;
 };
 
 //Apply the ComponentBase prototype
@@ -173,7 +170,7 @@ ExtendProperties(PhysicsComponent, {
         var playerAngVel = playerPhysComp.angularVelocity;
     */
     get angularVelocity() {
-        return this.__Internal__Dont__Modify__.angularVelocity;
+        return this.__Internal__Dont__Modify__.body.angularVelocity;
     },
 
     /*
@@ -323,7 +320,9 @@ ExtendProperties(PhysicsComponent, {
     /////                                                                                                            ////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /*
+});
+
+/*
         PhysicsComponent : addForce - Add a force to hte Physics Component, either as a force
                                       or as an impulse
         24/10/2016
@@ -337,28 +336,50 @@ ExtendProperties(PhysicsComponent, {
         //Add a sudden force to the player
         playerPhysComp.addForce(HEADING_VEC2.multi(SPEED_FORCE), ForceMode.IMPULSE);
     */
-    addForce: function(pForce, pMode) {
-        this.__Internal__Dont__Modify__.body.addForce(pForce, pMode);
-    },
+PhysicsComponent.prototype.addForce = function(pForce, pMode) {
+    this.__Internal__Dont__Modify__.body.addForce(pForce, pMode);
+};
 
-    /*
-        PhysicsComponent : addTorque - Add a rotational force to the Physics Component, either as
-                                       a force or as an impulse
-        24/10/2016
+/*
+    PhysicsComponent : addTorque - Add a rotational force to the Physics Component, either as
+                                   a force or as an impulse
+    24/10/2016
 
-        @param[in] pTorque - A number defining the rotational force to apply 
-        @param[in] pMode - A value defined in the ForceMode object that dictates
-                           how the force value will be treated (Default ForceMode.FORCE)
+    @param[in] pTorque - A number defining the rotational force to apply 
+    @param[in] pMode - A value defined in the ForceMode object that dictates
+                       how the force value will be treated (Default ForceMode.FORCE)
 
-        Example:
+    Example:
 
-        //Add sudden rotational force to the player
-        playerPhysComp.addTorque(FORCE_VALUE, ForceMode.IMPULSE);
-    */
-    addTorque: function(pTorque, pMode) {
-        this.__Internal__Dont__Modify__.body.addTorque(pTorque, pMode);
-    },
-});
+    //Add sudden rotational force to the player
+    playerPhysComp.addTorque(FORCE_VALUE, ForceMode.IMPULSE);
+*/
+PhysicsComponent.prototype.addTorque = function(pTorque, pMode) {
+    this.__Internal__Dont__Modify__.body.addTorque(pTorque, pMode);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
+/////                                             Callback Functions                                             ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+    PhysicsComponent : triggerCallbackEvent - If the Physics Object associated with this 
+                                              component encounters a trigger event run the
+                                              trigger event on the owner Game Object
+    25/10/2016
+
+    @param[in] pObj - The Physics Object that raised the trigger event
+*/
+PhysicsComponent.prototype.triggerCallbackEvent = function(pObj) {
+    //Check the storage of the physics Object for a Game Object
+    if (pObj.storage instanceof GameObject) {
+        //Check the owner of this Game Object has set the ontrigger function
+        if (this.__Internal__Dont__Modify__.owner.onTrigger !== null)
+            this.__Internal__Dont__Modify__.owner.onTrigger(pObj.storage);
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -386,9 +407,60 @@ PhysicsComponent.prototype.lateUpdate = function() {
 };
 
 /*
+    PhysicsComponent : transferOwnership - Transfer the ownership of this component to another
+                                           Game Object
+    25/10/2016
+
+    @param[in] pObj - The Game Object to transfer ownership to
+*/
+PhysicsComponent.prototype.transferOwnership = function(pObj) {
+    //Check the object value
+    if (pObj !== null && !pObj instanceof GameObject)
+        throw new Error("Can not assign " + pObj + " (Type: '" + typeof pObj + "') as the owner of " + this + ". Please only assign null or a Game Object instance");
+
+    //Set the owner variable
+    this.__Internal__Dont__Modify__.owner = pObj;
+
+    //Create the new Physics Object if the owner is valid
+    if (this.__Internal__Dont__Modify__.owner) {
+        //If there is already a physics body, delete it
+        if (this.__Internal__Dont__Modify__.body)
+            Physics.removeObject(this.__Internal__Dont__Modify__.body);
+
+        //Create a new Physics Object
+        this.__Internal__Dont__Modify__.body = new PhysicsObject();
+
+        //Assign the owner game object to the Physics body
+        this.__Internal__Dont__Modify__.body.storage = this.__Internal__Dont__Modify__.owner;
+
+        //Assign the callback function to the Physics Body for a trigger interaction
+        this.__Internal__Dont__Modify__.body.addTriggerEvent(this.triggerCallbackEvent.bind(this));
+
+        //Add to the Physics Object to the physics scene
+        Physics.addObject(this.__Internal__Dont__Modify__.body);
+    }
+
+    //Otherwise clear the any Physics Object
+    else if (this.__Internal__Dont__Modify__.body) {
+        //Remove the Physics Body from the Phsyics scene
+        Physics.removeObject(this.__Internal__Dont__Modify__.body);
+
+        //Nullify the Physics Object
+        this.__Internal__Dont__Modify__.body = null;
+    }
+};
+
+/*
     PhysicsComponent : dispose - Remove the internal Physics Object from the current Physics Scene
     24/10/2016
 */
 PhysicsComponent.prototype.dispose = function() {
-    Physics.removeObject(this.__Internal__Dont__Modify__.body);
+    //Check if there is a Physics Object
+    if (this.__Internal__Dont__Modify__.body) {
+        //Remove the Physics Object from the scene
+        Physics.removeObject(this.__Internal__Dont__Modify__.body);
+
+        //Nullify the variable
+        this.__Internal__Dont__Modify__.body = null;
+    }
 };

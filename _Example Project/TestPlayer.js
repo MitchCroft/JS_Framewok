@@ -12,7 +12,7 @@
  *      Version: 1.0
  *  
  *      Requires:
- *      GameObject.js, ShapeComponent.js, Input.js
+ *      TestChildObj.js, ShapeComponent.js, Input.js
  *
  *      Purpose:
  *      Provide a simple method for a player to interact
@@ -82,26 +82,23 @@ TestPlayer.prototype.start = function() {
     //Set the radius of the circle collider
     phys.collider.radius = this.size / 2;
 
-    //Create a child object 
-    var childObj = new GameObject("Player Child");
+    //Set the collider to be a trigger
+    phys.collider.isTrigger = true;
 
-    //Set child as child of player
-    childObj.transform.parent = this.transform;
+    //Create child objects 
+    for (var i = 0; i < 2; i++) {
+        //Create a child object 
+        var childObj = new TestChildObj("Player Child");
 
-    //Position the child half way up the player on the point
-    childObj.transform.localPosition = new Vec2(0, this.size / 2);
+        //Set child as child of player
+        childObj.transform.parent = this.transform;
 
-    //Add a shape to the child
-    var childShape = childObj.createComponent("ShapeComponent");
+        //Position the child half way up the player on the point
+        childObj.transform.localPosition = new Vec2(this.size / 2 * (i === 0 ? 1 : -1), -this.size / 2);
 
-    //Make the child shape a circle
-    childShape.points = getPrimitivePoints(ShapeType.CIRCLE, this.size / 2);
-
-    //Assign a random fill to the child
-    childShape.fillColor = new Color().randomize();
-
-    //Remove the border outline
-    childShape.borderColor = null;
+        //Set the childs size
+        childObj.size = this.size / 4;
+    }
 };
 
 /*
@@ -119,7 +116,27 @@ TestPlayer.prototype.update = function(pDelta) {
 
     //Adjust the camera's zoom
     sceneManager.camera.distance = Input.getAxis("zoom") * 19 + 1;
+};
 
-    //Rotate the child object
-    this.findObjectWithTag("Player Child").transform.localRotation += 90 * pDelta;
+/*
+    TestPlayer : onTrigger - If the player interacts with a test object apply a velocity
+    25/10/2016
+
+    @param[in] pObj - The Game Object that triggered the event
+*/
+TestPlayer.prototype.onTrigger = function(pObj) {
+    //Check the tag of the object
+    if (pObj.tag !== "Test Object");
+
+    //Get the physics component
+    var phys = pObj.getComponentWithID(-2);
+
+    //Check the component was found
+    if (!phys) return;
+
+    //Calculate the seperation vector
+    var seperation = pObj.transform.position.subtract(this.transform.position);
+
+    //Apply the force to the Physics Component
+    phys.addForce(seperation.multiSet(5));
 };

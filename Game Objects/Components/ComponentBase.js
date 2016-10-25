@@ -1,5 +1,23 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
+/////                                                   Component IDs                                            ////
+/////                                                                                                            ////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ *      Name: ComponentID
+ *      Author: Mitchell Croft
+ *      Date: 25/10/2016
+ *
+ *      Purpose:
+ *      Provide labels to the number ID's for
+ *      the pre-made components
+ **/
+
+var ComponentID = { SHAPE: -1, PHYSICS: -2 };
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////                                                                                                            ////
 /////                                                 Object Definition                                          ////
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,6 +186,23 @@ ComponentBase.prototype = {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+    ComponentBase : transferOwnership - Transfer the ownership of this component to a specified 
+                                        Game Object. This function can be overriden by custom
+                                        components if values need to be modified on owner change
+    25/10/2016
+
+    @param[in] pObj - The new Game Object that will be assigned as the owner
+*/
+ComponentBase.prototype.transferOwnership = function(pObj) {
+    //Check the object value
+    if (pObj !== null && !pObj instanceof GameObject)
+        throw new Error("Can not assign " + pObj + " (Type: '" + typeof pObj + "') as the owner of " + this + ". Please only assign null or a Game Object instance");
+
+    //Assign the owner game object
+    this.__Internal__Dont__Modify__.owner = pObj;
+};
+
+/*
     ComponentBase : internalDispose - Clear up internal values and call the user defined dispose
                                       function if defined. This is called by the scene management 
                                       and shouldn't be explicitly called elsewhere.
@@ -179,7 +214,7 @@ ComponentBase.prototype.internalDispose = function() {
         this.dispose();
 
     //Clear the owner
-    this.__Internal__Dont__Modify__.owner = null;
+    this.transferOwnership(null);
 
     //Set the diposed flag
     this.__Internal__Dont__Modify__.disposed = true;
