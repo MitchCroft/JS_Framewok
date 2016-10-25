@@ -216,6 +216,33 @@ Physics.__Internal__Dont__Modify__.extender({
                 //Continue to other collision events
                 continue;
             }
+
+            //Get the normal of the collision
+            var normal = collisions[i].overlap.normalized;
+
+            //Calculate the relative velocity
+            var relVel = second.velocity.subtract(first.velocity);
+
+            //Get the velocity along the normal
+            var velAlongNormal = relVel.dot(normal);
+
+            //Check if they are moving in opposite directions
+            if (velAlongNormal > 0) continue;
+
+            //Calculate the impulse
+            var impulseLength = -1 * velAlongNormal;
+
+            //Divide the impulse by the combined inverse masses
+            impulseLength /= (first.inverseMass + second.inverseMass);
+
+            //Get the impulse to apply
+            var impulse = normal.multi(impulseLength);
+
+            //Apply the forces 
+            if (!first.isKinematic)
+                first.addForce(first.velocity.subtract(impulse.multi(first.inverseMass)));
+            if (!second.isKinematic)
+                second.addForce(second.velocity.add(impulse.multi(second.inverseMass)));
         }
 
         //Reset the time accumulated
@@ -447,8 +474,8 @@ function PhysicsObject() {
         invMass: 1,
 
         //Store the drag values
-        drag: 0.1,
-        angDrag: 0.05,
+        drag: 0.5,
+        angDrag: 0.1,
 
         //Store a reference to the collider used on this object
         collider: null,
@@ -725,6 +752,21 @@ PhysicsObject.prototype = {
 
         //Set the inverse mass value
         this.__Internal__Dont__Modify__.invMass = 1 / this.__Internal__Dont__Modify__.mass;
+    },
+
+    /*
+        PhysicsObject : inverseMass - Get the inverse mass for the Physics Object
+        25/10/2016
+
+        @return number - Returns the inverse mass as a number
+
+        Example:
+
+        //Get the inverse mass of the players object
+        var invMass = playerPhysObj.inverseMass;
+    */
+    get inverseMass() {
+        return this.__Internal__Dont__Modify__.invMass;
     },
 
     /*
@@ -1119,16 +1161,7 @@ PhysicsObject.prototype.collidesWith = function(pOther) {
                 data.overlap = seperation.normalize().multiSet(min - dist);
             }
             break;
-        case ColliderType.SHAPE:
-
-            break;
         case (ColliderType.BOX | ColliderType.CIRCLE):
-
-            break;
-        case (ColliderType.BOX | ColliderType.SHAPE):
-
-            break;
-        case (ColliderType.CIRCLE | ColliderType.SHAPE):
 
             break;
         default:
@@ -1167,7 +1200,7 @@ PhysicsObject.prototype.raiseTriggerEvents = function(pObj) {
  *      Provide a numerical value to the different type of 
  *      Collider objects that can be created
  */
-var ColliderType = { NULL: -1, BOX: 1, CIRCLE: 2, SHAPE: 4 };
+var ColliderType = { NULL: -1, BOX: 1, CIRCLE: 2 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -1685,157 +1718,4 @@ CircleCollider.prototype.updateBounds = function() {
     //Update the min/ max of the bounds based on the radius
     this.__Internal__Dont__Modify__.bounds.min = new Vec2(-this.__Internal__Dont__Modify__.radius);
     this.__Internal__Dont__Modify__.bounds.max = new Vec2(this.__Internal__Dont__Modify__.radius);
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                                 Object Definition                                          ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
- *      Name: ShapeCollider
- *      Author: Mitchell Croft
- *      Date: 21/10/2016
- *
- *      Version: 1.0
- *
- *      Requires:
- *      ExtendProperties.js
- *
- *      Purpose:
- *      Define a custom area that acts as the collision 
- *      area of the collider
- **/
-
-/*
-    ShapeCollider : Constructor - Initialise with default values
-    21/10/2016
-
-    Example:
-
-    //Create a collider for the player
-    playerPhysObj.collider = new ShapeCollider();
-*/
-function ShapeCollider() {
-    //Call the Collider Base base for initial setup
-    ColliderBase.call(this);
-
-    //Store the points of the shape
-    this.__Internal__Dont__Modify__.points = [new Vec2(), new Vec2(), new Vec2()];
-};
-
-//Apply the ColliderBase prototype
-ShapeCollider.prototype = Object.create(ColliderBase.prototype);
-ShapeCollider.prototype.constructor = ShapeCollider;
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Property Definitions                                         ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-ExtendProperties(ShapeCollider, {
-    /*
-        ShapeCollider : type - Returns the type of collider the obejct is
-        21/10/2016
-
-        @return ColliderType - Returns a number defined in the ColliderType object
-
-        Example:
-
-        //Check if the collider is a square collider
-        if (playerCollider.type === ColliderType.SHAPE) {
-            //TODO: Do something
-        }
-    */
-    get type() {
-        return ColliderType.SHAPE;
-    },
-
-    /*
-        ShapeCollider : points - Get the points that make up the custom shape
-        21/10/2016
-
-        @return Vec2 array - Returns an array of Vec2 objects
-
-        Example:
-
-        //Get the points that make up the custom collider
-        var colliderPoints = playerShapeCollider.points;
-    */
-    get points() {
-        return this.__Internal__Dont__Modify__.points;
-    },
-
-    /*
-        ShapeCollider : points - Set the points used to define the custom collision area
-        21/10/2016
-
-        @param pPoints - An array of Vec2 objects containing the position data for
-                         the different points (Minimum of 3 points)
-
-        Example:
-
-        //Set the collision points for the player collider
-        playerShapeCollider.points = [new Vec2(0, -0.5), new Vec2(0.5, 0.5), new Vec2(-0.5, 0.5)];
-    */
-    set points(pPoints) {
-        //Check to ensure that the points are an array
-        if (!pPoints instanceof Array)
-            throw new Error("Can not set Shape Collider points to " + pPoints + " (Type '" + typeof pPoints + "') Please use an array of Vec2 objects with at least 3 points");
-
-        //Check there are at least of 3 points
-        if (pPoints.length < 3)
-            throw new Error("Can not set Shape Collider points with " + pPoints.length + " as there must be at least 3 points to make a shape. Please supply an array of at least three points");
-
-        //Store a temporary array to store values
-        var temp = [];
-
-        //Check all objects in the array are Vec2 
-        for (var i = 0; i < pPoints.length; i++) {
-            //Check the value is a Vec2 
-            if (pPoints[i] instanceof Vec2)
-                temp[i] = pPoints[i];
-
-            //Otherwise throw an error
-            else throw new Error("Can not set points data with a value of " + pPoints[i] + " (Type '" + typeof pPoints[i] + "') Please only use Vec2 objects");
-        }
-
-        //Set the colliders points to the temp array
-        this.__Internal__Dont__Modify__.points = temp;
-
-        //Update the bounds of the collider
-        this.updateBounds();
-    },
-});
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                                  Main Functions                                            ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-    ShapeCollider : updateBounds - Update the colliders bounds object
-    21/10/2016
-
-    Example:
-
-    //Force the bounds of the collider to update
-    playerShapeCollider.updateBounds();
-*/
-ShapeCollider.prototype.updateBounds = function() {
-    //Assign the bounds object the collision points
-    this.__Internal__Dont__Modify__.bounds.points = this.__Internal__Dont__Modify__.points;
-
-    //Reset the center of mass
-    this.__Internal__Dont__Modify__.COMOffset.reset();
-
-    //Add all cordinate values together
-    for (var i = 0; i < this.__Internal__Dont__Modify__.points.length; i++)
-        this.__Internal__Dont__Modify__.COMOffset.addSet(this.__Internal__Dont__Modify__.points[i]);
-
-    //Take the avergae to find the center of mass
-    this.__Internal__Dont__Modify__.COMOffset.divSet(this.__Internal__Dont__Modify__.points.length);
 };

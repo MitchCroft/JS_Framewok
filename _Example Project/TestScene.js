@@ -37,7 +37,7 @@ function TestScene() {
     this.cameraSpeed = 2;
 
     //Define the size of the world to spawn objects in
-    this.worldRadius = 10000;
+    this.worldRadius = 1000;
 
     //Store a reference to the player object
     this.playerObj = null;
