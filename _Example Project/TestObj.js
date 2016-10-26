@@ -24,7 +24,7 @@ var TEST_OBJ_COL_SWAP_RATE = 10;
  *      Version: 1.0
  *
  *      Requires:
- *      GameObject.js, ShapeComponent.js
+ *      GameObject.js, ShapeComponent.js, 
  *
  *      Purpose:
  *      Provide a basic shape to be visible in the scene
@@ -88,6 +88,25 @@ TestObj.prototype.start = function() {
     //Set the radius of the circle collider
     phys.collider.radius = size / 2;
 
+    if (Math.random() <= 0.1) {
+        //Add a particle emitter component
+        var emitter = this.createComponent("ParticleComponent");
+
+        //Setup the emitter
+        emitter.type = Math.floor(Math.random() * (EmitterType.LINE + 1));
+        emitter.maximum = 100;
+        emitter.emitRate = 25;
+        emitter.minLife = 4;
+        emitter.maxLife = 4;
+        emitter.minVelocity = 50;
+        emitter.maxVelocity = 50;
+        emitter.startSize = size / 8;
+        emitter.runTime = Math.random() * 10 + 5;
+
+        //Start the emitter
+        emitter.start();
+    }
+
     //Generate a random rotation for the object
     this.transform.rotation = Math.random() * 360;
 
@@ -111,7 +130,7 @@ TestObj.prototype.update = function(pDelta) {
         this.aniTimer = TEST_OBJ_COL_SWAP_RATE;
 
         //Get the shape component
-        var comp = this.getComponentWithID(-1);
+        var comp = this.getComponentWithID(ComponentID.SHAPE);
 
         //Ensure the component was found
         if (comp === null) throw new Error("Test Object was unable to get the component with ID -1");

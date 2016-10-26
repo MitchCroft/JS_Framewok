@@ -278,6 +278,32 @@ Vec2.prototype.rotate = function(pRot) {
 };
 
 /*
+    Vec2 : rotated - Return a copy of the current Vec2 object rotatated by the passed in amount of radians
+    26/10/2016
+
+    @param[in] pRot - The amount of radians to rotate the vector by
+
+    @return Vec2 - Returns a Vec2 object contianing the result of the rotation
+
+    Example:
+
+    //Get the direction 90 degrees to the right of the player
+    var perpendicular = playerDirection.rotated(Math.PI / 2); //Gets the rotation of the player direction by 90 degrees clockwise
+*/
+Vec2.prototype.rotated = function(pRot) {
+    //Get the sin and cos values
+    var sin = Math.sin(pRot);
+    var cos = Math.cos(pRot);
+
+    //Get the rotated values
+    var xRot = (this.x * cos) - (this.y * sin);
+    var yRot = (this.x * sin) + (this.y * cos);
+
+    //Return the rotated values
+    return new Vec2(xRot, yRot);
+};
+
+/*
     Vec2 : lerp - Linearly interpolates between the current Vec2 object and a passed in Vec2 object
                   by the scale of pT
     28/07/2016

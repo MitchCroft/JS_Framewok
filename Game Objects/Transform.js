@@ -1000,7 +1000,7 @@ Transform.prototype.removeChild = function(pChild) {
 
 /*
     Transform : transformPoint - Transform a point from this Transforms local space to 
-                                 world space (Accurate as of last updateTransforms call)
+                                 world space 
     08/08/2016
 
     @param[in] pVec - The point to transform
@@ -1013,12 +1013,16 @@ Transform.prototype.removeChild = function(pChild) {
     var ahead = playerTransform.transformPoint(new Vec2(0, 1).multi(AHEAD_CHECK_LENGTH));
 */
 Transform.prototype.transformPoint = function(pVec) {
+    //Check if the transform is invalid
+    if (this.invalidTransforms) this.updateTransforms();
+
+    //Transform the point
     return this.__Internal__Dont__Modify__.glbMat.multiVec(pVec);
 };
 
 /*
     Transform : inverseTransformPoint - Transform a point from world space to this Transforms
-                                        local space (Accurate as of last updateTransforms call)
+                                        local space 
     08/08/2016
 
     @param[in] pVec - The point to inversly transform
@@ -1031,5 +1035,9 @@ Transform.prototype.transformPoint = function(pVec) {
     var enemyInLocal = playerTransform.inverseTransformPoint(enemyPos);
 */
 Transform.prototype.inverseTransformPoint = function(pVec) {
+    //Check if the transform is invalid
+    if (this.invalidTransforms) this.updateTransforms();
+
+    //Transform the point
     return this.__Internal__Dont__Modify__.glbMat.inversed.multiVec(pVec);
 };

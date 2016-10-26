@@ -75,29 +75,6 @@ TestPlayer.prototype.start = function() {
     //Set the collider to be a trigger
     phys.collider.isTrigger = true;
 
-    //Add a particle emitter component to the player
-    var emitter = this.createComponent("ParticleComponent");
-
-    //Set the maximum number of particles
-    emitter.maximum = 100;
-
-    //Set the emit rate
-    emitter.emitRate = 25;
-
-    //Set the lifetime
-    emitter.minLife = 1;
-    emitter.maxLife = 4;
-
-    //Set the velocity
-    emitter.minVelocity = 50;
-    emitter.maxVelocity = 500;
-
-    //Set the starting size
-    emitter.startSize = this.size / 4;
-
-    //Start the emitter
-    emitter.start();
-
     //Add the body of the player
     this.shapeComp = this.createComponent("ShapeComponent");
 
@@ -107,6 +84,33 @@ TestPlayer.prototype.start = function() {
     //Set the color of the body
     this.shapeComp.fillColor = new Color("#F00");
     this.shapeComp.borderColor = new Color();
+
+    //Add a particle emitter component to the player
+    var emitter = this.createComponent("ParticleComponent");
+
+    //Set the maximum number of particles
+    emitter.maximum = 200;
+
+    //Set the emit rate
+    emitter.emitRate = 1000;
+
+    //Set the lifetime
+    emitter.minLife = 3;
+    emitter.maxLife = 3;
+
+    //Set the velocity
+    emitter.minVelocity = 200;
+    emitter.maxVelocity = 200;
+
+    //Set the starting size
+    emitter.startSize = this.size / 4;
+
+    emitter.startColor = new Color(255, 0, 0, 1);
+
+    emitter.runTime = 2;
+
+    //Start the emitter
+    emitter.start();
 
     //Create child objects 
     for (var i = 0; i < 2; i++) {
@@ -139,10 +143,6 @@ TestPlayer.prototype.update = function(pDelta) {
 
     //Adjust the camera's zoom
     sceneManager.camera.distance = Input.getAxis("zoom") * 19 + 1;
-
-    if (Input.keyPressed(Keys.SPACE)) {
-        this.getComponentWithID(ComponentID.PARTICLES).type = EmitterType.DIRECTION;
-    }
 };
 
 /*

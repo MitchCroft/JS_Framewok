@@ -11,10 +11,11 @@
  *
  *      Purpose:
  *      Provide labels to the number ID's for
- *      the pre-made components
+ *      the pre-made components, as well as set the render
+ *      order for the pre-made components;
  **/
 
-var ComponentID = { SHAPE: -1, PHYSICS: -2, PARTICLES: -3 };
+var ComponentID = { PARTICLES: -1, SHAPE: -2, PHYSICS: -3 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////

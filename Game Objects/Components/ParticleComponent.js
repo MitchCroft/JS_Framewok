@@ -87,6 +87,9 @@ function ParticleComponent() {
 
     //Store a reference to the furthest particle from the origin
     this.__Internal__Dont__Modify__.furthestParticle = null;
+
+    //Store the scale factor of the owner Game Object
+    this.__Internal__Dont__Modify__.ownerScale = 1;
 };
 
 //Apply the ComponentBase prototype
@@ -814,7 +817,7 @@ ParticleComponent.prototype.emit = function() {
     particle.lifespan = Math.random() * (this.__Internal__Dont__Modify__.maxLife - this.__Internal__Dont__Modify__.minLife) + this.__Internal__Dont__Modify__.minLife;
 
     //Set the starting size and color
-    particle.size = this.__Internal__Dont__Modify__.startSize;
+    particle.size = this.__Internal__Dont__Modify__.startSize * this.__Internal__Dont__Modify__.ownerScale;
     particle.color.set(this.__Internal__Dont__Modify__.startColor);
 
     //Assign a rotation
@@ -839,6 +842,9 @@ ParticleComponent.prototype.emit = function() {
             break;
     }
 
+    //Transform the position of the particle
+    particle.position.set(this.owner.transform.transformPoint(particle.position));
+
     //Assign a direction 
     switch (this.__Internal__Dont__Modify__.type) {
         case EmitterType.POINT:
@@ -849,7 +855,7 @@ ParticleComponent.prototype.emit = function() {
         case EmitterType.DIRECTION:
         case EmitterType.LINE:
             //Give the particle the emitters direction
-            particle.velocity.set(this.__Internal__Dont__Modify__.direction);
+            particle.velocity.set(this.__Internal__Dont__Modify__.direction.rotated(this.owner.transform.rotation * Math.PI / 180));
             break;
     }
 
@@ -870,14 +876,15 @@ ParticleComponent.prototype.update = function(pDelta) {
         this.__Internal__Dont__Modify__.progress += pDelta;
 
         //Check if the runtime is over
-        if (this.__Internal__Dont__Modify__.progress >= this.__Internal__Dont__Modify__.progress)
+        if (this.__Internal__Dont__Modify__.progress >= this.__Internal__Dont__Modify__.runTime)
             this.stop();
     }
 
+    //Update the scale factor from the owner
+    this.__Internal__Dont__Modify__.ownerScale = Math.max(this.owner.transform.scaleX, this.owner.transform.scaleY);
+
     //Store the value of the furthest distance particle
-    var furthestDistSq = (this.__Internal__Dont__Modify__.furthestParticle ?
-        this.__Internal__Dont__Modify__.furthestParticle.position.subtract(this.owner.transform.position).sqrMag :
-        0);
+    var furthestDistSq = 0;
 
     //Update the alive particles
     var currDistSq = 0;
@@ -905,7 +912,9 @@ ParticleComponent.prototype.update = function(pDelta) {
         particle.position.addSet(particle.velocity.multi(pDelta));
 
         //Lerp for the size of the particle
-        particle.size = this.__Internal__Dont__Modify__.startSize + (this.__Internal__Dont__Modify__.endSize - this.__Internal__Dont__Modify__.startSize) * (particle.lifetime / particle.lifespan);
+        particle.size = (this.__Internal__Dont__Modify__.startSize * this.__Internal__Dont__Modify__.ownerScale) +
+            ((this.__Internal__Dont__Modify__.endSize * this.__Internal__Dont__Modify__.ownerScale) - (this.__Internal__Dont__Modify__.startSize * this.__Internal__Dont__Modify__.ownerScale)) *
+            (particle.lifetime / particle.lifespan);
 
         //Lerp for the color of the particle
         particle.color.set(colorLerp(this.__Internal__Dont__Modify__.startColor, this.__Internal__Dont__Modify__.endColor, particle.lifetime / particle.lifespan));
@@ -914,7 +923,7 @@ ParticleComponent.prototype.update = function(pDelta) {
         particle.rotation += particle.rotationSpeed * pDelta;
 
         //Check if the particle is now the furthest
-        if ((currDistSq = particle.position.sqrMag) > furthestDistSq || !this.__Internal__Dont__Modify__.furthestParticle) {
+        if ((currDistSq = (particle.position.subtract(this.owner.transform.position).sqrMag + particle.size * particle.size)) > furthestDistSq) {
             //Store the furthest distance squared
             furthestDistSq = currDistSq;
 
@@ -950,15 +959,27 @@ ParticleComponent.prototype.update = function(pDelta) {
 */
 ParticleComponent.prototype.updateBounds = function() {
     //Check if the bounds will update 
-    if (this.lclBounds.min.equal(this.lclBounds.max) && this.lclBounds.min.sqrMag === 0 && !this.__Internal__Dont__Modify__.furthestParticle)
-        return false;
+    if (!this.__Internal__Dont__Modify__.furthestParticle) {
+        //Check if the local bounds are already zeroed out
+        if (this.lclBounds.min.equal(this.lclBounds.max) && this.lclBounds.min.sqrMag === 0)
+            return false;
+
+        //Otherwise update the min and max at zero
+        this.lclBounds.min.set(this.lclBounds.max.reset());
+
+        //Return updated 
+        return true;
+    }
 
     //Get the distance to the furthest particle
-    var distance = this.__Internal__Dont__Modify__.furthestParticle.position.magnitude;
+    var distance = this.__Internal__Dont__Modify__.furthestParticle.position.subtract(this.owner.transform.position).mag + this.__Internal__Dont__Modify__.furthestParticle.size;
 
     //Set the bounds
-    this.lclBounds.min.x = this.lclBounds.min.y = -distance / 2;
-    this.lclBounds.max.x = this.lclBounds.max.y = distance / 2;
+    this.lclBounds.min.x = this.lclBounds.min.y = -distance;
+    this.lclBounds.max.x = this.lclBounds.max.y = distance;
+
+    //Wipe the furthest particle reference
+    this.__Internal__Dont__Modify__.furthestParticle = null;
 
     //Return the bounds have changed
     return true;
@@ -973,13 +994,16 @@ ParticleComponent.prototype.updateBounds = function() {
                            and the parent game object
 */
 ParticleComponent.prototype.draw = function(pCtx, pProjWorldView) {
+    //Get the projection view matrix
+    var projView = pProjWorldView.multi(this.owner.transform.globalMatrix.inversed);
+
     //Loop through all active particles
     for (var i = 0; i < this.__Internal__Dont__Modify__.aliveParticles; i++) {
         //Get the current particle
         var particle = this.__Internal__Dont__Modify__.particles[i];
 
         //Create the particle transform
-        var transform = pProjWorldView.multi(createTransform(particle.position.x, particle.position.y, particle.rotation));
+        var transform = projView.multi(createTransform(particle.position.x, particle.position.y, particle.rotation));
 
         //Set the transform
         pCtx.setTransform(transform.data[0][0], transform.data[0][1], transform.data[1][0], transform.data[1][1], transform.data[2][0], transform.data[2][1]);
