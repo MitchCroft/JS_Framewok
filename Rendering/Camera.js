@@ -10,7 +10,7 @@
  *      Date: 28/08/2016
  *
  *      Requires:
- *      Mat3.js
+ *      Mat3.js, ExtendProperties.js
  *
  *      Version: 2.0
  *      Added scaling to provide consistant viewing area across 
@@ -26,7 +26,7 @@
                            viewport dimensions on the supplied canvas
     28/08/2016
 
-    @param[in/out] pCanvas - The canvas object to use for scaling the camera view
+    @param[in] pCanvas - The canvas object to use for scaling the camera view
     @param[in] pViewWidth - The width of the cameras view (World Units)
     @param[in] pViewHeight - The height of the cameras view (World Units)
     @param[in] pDistance - Scales the drawn elements to give the appearance
@@ -63,17 +63,17 @@ function Camera(pCanvas, pViewWidth, pViewHeight, pDistance) {
     //Setup the projection matrix
     this.__Internal__Dont__Modify__.projection.data[0][0] = this.__Internal__Dont__Modify__.viewportScale.x * this.__Internal__Dont__Modify__.dist;
     this.__Internal__Dont__Modify__.projection.data[1][1] = this.__Internal__Dont__Modify__.viewportScale.y * this.__Internal__Dont__Modify__.dist;
-    this.__Internal__Dont__Modify__.projection.data[2][0] = pViewWidth / 2;
-    this.__Internal__Dont__Modify__.projection.data[2][1] = pViewHeight / 2;
+    this.__Internal__Dont__Modify__.projection.data[2][0] = pCanvas.width / 2;
+    this.__Internal__Dont__Modify__.projection.data[2][1] = pCanvas.height / 2;
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Property Definitions                                         ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ExtendProperties(Camera, {
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                               Property Definitions                                         ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Camera.prototype = {
     /*
         Camera : position - Return the world position of the Camera object
         28/08/2016
@@ -232,7 +232,22 @@ Camera.prototype = {
     },
 
     /*
-        Camera : canvasDimensions - Set the canvas dimensions that are used for Camera object
+        Camera : canvasDimensions - Get the current canvas dimensions that are being used for the Camera object
+        29/09/2016
+
+        @return Vec2 - Returns a Vec2 object with the canvas dimensions contained
+
+        Example:
+
+        //Get the dimensions of the area the camera is rendering to
+        var renderDim = Camera.canvasDimensions;
+    */
+    get canvasDimensions() {
+        return new Vec2(this.__Internal__Dont__Modify__.canvasDimensions);
+    },
+
+    /*
+        Camera : canvasDimensions - Set the canvas dimensions that are used for the Camera object
         28/08/2016
 
         @param[in] pDim - A Vec2 object that contains the new canvas dimensions
@@ -403,14 +418,30 @@ Camera.prototype = {
         Example:
 
         //Get the cameras view matrix
-        var vamView = Camera.view;
+        var camView = Camera.view;
     */
     get view() {
         return this.globalMat.inverse();
     },
 
     /*
-        Camera : projectionView - Get the projection view amtrix from the Camera 
+        Camera : projection - Get the projection matrix from the camera object
+        21/11/2016
+
+        @return Mat3 - Returns a Mat3 object holding the projection matrix for the
+                       Camera object
+
+        Example:
+
+        //Get the cameras projection matrix
+        var camProj = Camera.projection;
+    */
+    get projection() {
+        return new Mat3(this.__Internal__Dont__Modify__.projection);
+    },
+
+    /*
+        Camera : projectionView - Get the projection view matrix from the Camera 
                                   object
         28/08/2016
 
@@ -424,5 +455,23 @@ Camera.prototype = {
     */
     get projectionView() {
         return this.__Internal__Dont__Modify__.projection.multi(this.view);
-    }
-};
+    },
+
+    /*
+        Camera : projectionUI - Get the projection matrix used to scale UI elements
+                                to the viewable canvas
+        21/11/2016
+
+        @return Mat3 - Returns a Mat3 object holding the scaleing to apply to UI
+                       elements
+
+        Example:
+
+        //Get the UI projection matrix from the camera
+        var projUI = Camera.projectionUI;
+    */
+    get projectionUI() {
+        return createScaleMat(this.__Internal__Dont__Modify__.viewportScale.x,
+            this.__Internal__Dont__Modify__.viewportScale.y);
+    },
+});

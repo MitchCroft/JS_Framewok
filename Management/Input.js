@@ -99,11 +99,13 @@ var Input = new function() {
                 var objVal = 0;
 
                 //Check if positive key is down
-                if (curKeyState[axisObjects[axisName][i].positiveKey])
+                if (curKeyState[axisObjects[axisName][i].positiveKey] ||
+                    curKeyState[axisObjects[axisName][i].altPositiveKey])
                     objVal += axisObjects[axisName][i].strength * pDelta;
 
                 //Check if negative key is down
-                if (curKeyState[axisObjects[axisName][i].negativeKey])
+                if (curKeyState[axisObjects[axisName][i].negativeKey] ||
+                    curKeyState[axisObjects[axisName][i].altNegativeKey])
                     objVal -= axisObjects[axisName][i].strength * pDelta;
 
                 //Check if the strength is stronger then current
@@ -559,19 +561,27 @@ var Input = new function() {
                       to reach full value, 2 half a second, 0.5 two seconds etc.) (Default 1)
     @param[in] pGrav - The gravity of this InputAxis object (How long it takes to return 
                        to a 0 value) (Default 1)
+    @param[in] pAltPos - An alternative key that can be used to add a positive value
+                         to the axis (Default 0)
+    @param[in] pAltNeg - An alternative key that can be used to add a negative value
+                         to the axis (Default 0)
 
     Example:
 
     //Create a horizontal movement axis
-    var axis = new InputAxis("horizontal", Keys.D, Keys.A, 2, 0.5);
+    var axis = new InputAxis("horizontal", Keys.D, Keys.A, 2, 0.5, Keys.RIGHT, Keys.LEFT);
 */
-function InputAxis(pName, pPos, pNeg, pStr, pGrav) {
+function InputAxis(pName, pPos, pNeg, pStr, pGrav, pAltPos, pAltNeg) {
     //Store the name of the axis that this object effects
     this.name = (typeof pName === "string" ? pName : "UNNAMED");
 
     //Store key values that effect the axis value
     this.positiveKey = (typeof pPos === "number" ? pPos : 0);
     this.negativeKey = (typeof pNeg === "number" ? pNeg : 0);
+
+    //Store the alternative key values
+    this.altPositiveKey = (typeof pAltPos === "number" ? pAltPos : 0);
+    this.altNegativeKey = (typeof pAltNeg === "number" ? pAltNeg : 0);
 
     //Store the strength of the input axis 
     this.strength = (typeof pStr === "number" ? pStr : 1);

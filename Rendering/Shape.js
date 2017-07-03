@@ -10,9 +10,9 @@
  *      Date: 09/08/2016
  *
  *      Requires:
- *      Color.js, Mat3.js
+ *      Color.js, Mat3.js, ExtendProperties.js
  *
- *      Version: 1.0
+ *      Version: 2.0
  *
  *      Purpose:
  *      Provide a method for storing 2D dimensional shape
@@ -25,7 +25,7 @@
     Shape : Constructor - Initialise with default values
     09/08/2016
 
-    @param[in] pCopy - A Shape object to copy the values of (Default undefined)
+    param[in] pCopy - A Shape object to copy the values of (Default undefined)
 
     Example:
 
@@ -73,6 +73,28 @@ function Shape(pCopy) {
     }
 };
 
+ExtendProperties(Shape, {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////                                                                                                            ////
+  /////                                               Property Definitions                                         ////
+  /////                                                                                                            ////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /*
+    Shape : clone - Return a copy of the current object
+    03/07/2017
+
+    return Shape - Returns a new Shape instanceof
+
+    Example:
+
+    //Create a copy of the player shape
+    var cpy = playerShape.clone;
+  */
+  get clone() {
+    return new Shape(this);
+  },
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
 /////                                               Main Functions                                               ////
@@ -83,10 +105,10 @@ function Shape(pCopy) {
     Shape : draw - Render the current Shape object to the passed in context
     09/08/2016
 
-    @param[in] pCtx - The context the the shape should be rendered to
-    @param[in] pTrans - An optional Mat3 object to be applied to the shapes
+    param[in] pCtx - The context the the shape should be rendered to
+    param[in] pTrans - An optional Mat3 object to be applied to the shapes
                         coordinate values
-    @param[in] pPointSize - Draws circles over the points of the shape
+    param[in] pPointSize - Draws circles over the points of the shape
                             for debugging purposes in the specified size
 
     Example:
@@ -104,7 +126,7 @@ function Shape(pCopy) {
     //Debug the player shape
     playerShape.draw(context, playerGlobalMat3, 3);
 */
-Shape.prototype.draw = function(pCtx, pTrans, pPointSize) {
+draw: function(pCtx, pTrans, pPointSize) {
     //Check there are colors to render the shape with
     if ((this.fillColor instanceof Color || this.outlineColor instanceof Color) && this.points.length) {
         //Save if a transform has been set
@@ -182,25 +204,25 @@ Shape.prototype.draw = function(pCtx, pTrans, pPointSize) {
             }
         }
     }
-};
+},
 
 /*
-    Shape : setInterpolatedPoints - Set the number of points for the shape. New 
-                                    points generated based on the current Shapes 
+    Shape : setInterpolatedPoints - Set the number of points for the shape. New
+                                    points generated based on the current Shapes
                                     existing points. For best results use Shapes
                                     with an equal number of points
     09/08/2016
 
-    @param[in] pCount - The number of points that the shape should have (Minimum 3)
+    param[in] pCount - The number of points that the shape should have (Minimum 3)
 
-    @return this - Returns itself once the function has ended
+    return this - Returns itself once the function has ended
 
     Example:
 
     //Improve the point quality of a shape
     myShape.setInterpolatedPoints(50);
 */
-Shape.prototype.setInterpolatedPoints = function(pCount) {
+setInterpolatedPoints: function(pCount) {
     //Ensure there are at least three points in the shape
     if (this.points.length < 3 || pCount < 3 || this.points.length === pCount) return;
 
@@ -230,23 +252,23 @@ Shape.prototype.setInterpolatedPoints = function(pCount) {
 
     //Return itself
     return this;
-};
+},
 
 /*
     Shape : morph - Morph the current Shape into the passed in shape value over time
     09/08/2016
 
-    @param[in] pEnd - The Shape object to be morphed into (Returned when pT is 1)
-    @param[in] pT - The scale with which to interpolate between the Shapes (0 - 1)
+    param[in] pEnd - The Shape object to be morphed into (Returned when pT is 1)
+    param[in] pT - The scale with which to interpolate between the Shapes (0 - 1)
 
-    @return Shape - Returns a Shape object with the interpolated values
+    return Shape - Returns a Shape object with the interpolated values
 
     Example:
 
     //Morph between two shapes over time
     var morphedShape = myShape.morph(otherShape, (Math.sin(Date.now() * 0.001) + 1) / 2);
 */
-Shape.prototype.morph = function(pEnd, pT) {
+morph: function(pEnd, pT) {
     //Set recursive function to find the HCD
     var HCD = function(pA, pB) {
         //If pB has no value return a
@@ -296,7 +318,8 @@ Shape.prototype.morph = function(pEnd, pT) {
 
     //Return the morphed shape
     return temp;
-};
+},
+});
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -310,7 +333,7 @@ Shape.prototype.morph = function(pEnd, pT) {
  *      Date: 09/08/2016
  *
  *      Purpose:
- *      Name the numerical values given to primitive shapes 
+ *      Name the numerical values given to primitive shapes
  *      that can be generated by the factory function createPrimitiveShape
  **/
 
@@ -322,7 +345,7 @@ var ShapeType = { SQUARE: 0, CIRCLE: 1, TRIANGLE: 2 };
 /////                                                                                                            ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* 
+/*
     Semi-constant variable, not modified through regular operation
     but can be modified at runtime in order to adjust the quality
     of the circles generated.
@@ -333,11 +356,11 @@ var PRIMGEN_CIRCLE_SIDES = 25;
     createPrimitiveShape - Get a new Shape object setup as a passed in primitive type
     09/08/2016
 
-    @param[in] pType - The type of shape to create from the ShapeType 
+    param[in] pType - The type of shape to create from the ShapeType
                        value list (E.g. ShapeType.SQUARE)
-    @param[in] pSize - The size of the shape within its local space (Default 1)
+    param[in] pSize - The size of the shape within its local space (Default 1)
 
-    @return Shape - Returns a new shape object setup with the points
+    return Shape - Returns a new shape object setup with the points
                     in the defined shape
 
     Example:
@@ -368,7 +391,7 @@ function createPrimitiveShape(pType, pSize) {
             //Get the angle increase per iteration
             var angleIncrease = (Math.PI * 2) / PRIMGEN_CIRCLE_SIDES;
 
-            //Get the starting direction 
+            //Get the starting direction
             var dir = new Vec2(0, -1);
 
             //Iterate through sides and create points

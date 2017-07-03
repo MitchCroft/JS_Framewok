@@ -10,7 +10,7 @@
  *      Date: 28/07/2016
  *
  *      Requires:
- *      Vec2.js
+ *      Vec2.js, ExtendProperties.js
  *
  *      Version: 2.0        
  *      Added properties as well as additional functionality (Inverse)
@@ -59,13 +59,13 @@ function Mat3(pMat) {
     }
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Property Definitions                                         ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ExtendProperties(Mat3, {
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                               Property Definitions                                         ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Mat3.prototype = {
     /*
         Mat3 : clone - Create a copy of the current Mat3 object
         28/07/2016
@@ -178,400 +178,400 @@ Mat3.prototype = {
 
         //Return the inverse
         return adjugate;
-    }
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Main Functions                                               ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-    Mat3 : transpose - Transpose the current Mat3 object
-    28/07/2016
-
-    @return this - Returns itself once the function has ended
-
-    Example:
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                               Main Functions                                               ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+        Mat3 : transpose - Transpose the current Mat3 object
+        28/07/2016
+
+        @return this - Returns itself once the function has ended
+
+        Example:
 
-    //Get matrix transpose
-    myMat3.transpose();
-*/
-Mat3.prototype.transpose = function() {
-    //Store the original values
-    var temp = new Mat3(this);
-
-    //Transpose the values
-    this.data[1][0] = temp.data[0][1];
-    this.data[2][0] = temp.data[0][2];
-    this.data[0][1] = temp.data[1][0];
-    this.data[2][1] = temp.data[1][2];
-    this.data[0][2] = temp.data[2][0];
-    this.data[1][2] = temp.data[2][1];
-
-    //Return itself
-    return this;
-};
-
-/*
-    Mat3 : inverse - Inverse the current Mat3 object
-    28/07/2016
-
-    @return this - Returns itself once the function has ended
-
-    Example:
-
-    //Get the inverse of the 'camera' transform
-    var view = new Mat3(camera).inverse();
-*/
-Mat3.prototype.inverse = function() {
-    //Create the matrix of minors
-    var minor = new Mat3();
-
-    //Calculate the values
-    minor.data[0][0] = this.data[1][1] * this.data[2][2] - this.data[2][1] * this.data[1][2];
-    minor.data[1][0] = this.data[0][1] * this.data[2][2] - this.data[2][1] * this.data[0][2];
-    minor.data[2][0] = this.data[0][1] * this.data[1][2] - this.data[1][1] * this.data[0][2];
-
-    minor.data[0][1] = this.data[1][0] * this.data[2][2] - this.data[2][0] * this.data[1][2];
-    minor.data[1][1] = this.data[0][0] * this.data[2][2] - this.data[2][0] * this.data[0][2];
-    minor.data[2][1] = this.data[0][0] * this.data[1][2] - this.data[1][0] * this.data[0][2];
-
-    minor.data[0][2] = this.data[1][0] * this.data[2][1] - this.data[2][0] * this.data[1][1];
-    minor.data[1][2] = this.data[0][0] * this.data[2][1] - this.data[2][0] * this.data[0][1];
-    minor.data[2][2] = this.data[0][0] * this.data[1][1] - this.data[1][0] * this.data[0][1];
-
-    //Create the matrix of cofactors
-    var cofactor = new Mat3();
-
-    //Calculate the values
-    cofactor.data[0][0] = minor.data[0][0];
-    cofactor.data[1][0] = minor.data[1][0] * -1;
-    cofactor.data[2][0] = minor.data[2][0];
-
-    cofactor.data[0][1] = minor.data[0][1] * -1;
-    cofactor.data[1][1] = minor.data[1][1];
-    cofactor.data[2][1] = minor.data[2][1] * -1;
-
-    cofactor.data[0][2] = minor.data[0][2];
-    cofactor.data[1][2] = minor.data[1][2] * -1;
-    cofactor.data[2][2] = minor.data[2][2];
-
-    //Create the Adjugate matrix
-    var adjugate = cofactor.transposed;
-
-    //Find the detriment
-    var detriment = this.data[0][0] * minor.data[0][0] -
-        this.data[1][0] * minor.data[1][0] +
-        this.data[2][0] * minor.data[2][0];
-
-    //Multiply the adjugate by 1/detriment
-    var invDetriment = 1 / detriment;
-
-    this.data[0][0] = adjugate.data[0][0] * invDetriment;
-    this.data[1][0] = adjugate.data[1][0] * invDetriment;
-    this.data[2][0] = adjugate.data[2][0] * invDetriment;
-
-    this.data[0][1] = adjugate.data[0][1] * invDetriment;
-    this.data[1][1] = adjugate.data[1][1] * invDetriment;
-    this.data[2][1] = adjugate.data[2][1] * invDetriment;
-
-    this.data[0][2] = adjugate.data[0][2] * invDetriment;
-    this.data[1][2] = adjugate.data[1][2] * invDetriment;
-    this.data[2][2] = adjugate.data[2][2] * invDetriment;
-
-    //Return itself
-    return this;
-};
-
-/*
-    Mat3 : translated - Get the copy of the current Mat3 object translated by specified values
-    28/07/2016
-
-    @param[in] pX - The value to be translated along the X axis
-    @param[in] pY - The value to be translated along the Y axis
-
-    @return Mat3 - Returns a Mat3 holding the result of the translation
-
-    Example:
-    
-    //Get the world matrix after the player has moved
-    var futureMat = playerMatrix.translated(velocity.x, velocity.y);
-*/
-Mat3.prototype.translated = function(pX, pY) {
-    //Create a copy of the current Mat3
-    var temp = new Mat3(this);
-
-    //Translate the temp
-    temp.data[2][0] += pX;
-    temp.data[2][1] += pY;
+        //Get matrix transpose
+        myMat3.transpose();
+    */
+    transpose: function() {
+        //Store the original values
+        var temp = new Mat3(this);
+
+        //Transpose the values
+        this.data[1][0] = temp.data[0][1];
+        this.data[2][0] = temp.data[0][2];
+        this.data[0][1] = temp.data[1][0];
+        this.data[2][1] = temp.data[1][2];
+        this.data[0][2] = temp.data[2][0];
+        this.data[1][2] = temp.data[2][1];
+
+        //Return itself
+        return this;
+    },
+
+    /*
+        Mat3 : inverse - Inverse the current Mat3 object
+        28/07/2016
+
+        @return this - Returns itself once the function has ended
+
+        Example:
+
+        //Get the inverse of the 'camera' transform
+        var view = new Mat3(camera).inverse();
+    */
+    inverse: function() {
+        //Create the matrix of minors
+        var minor = new Mat3();
+
+        //Calculate the values
+        minor.data[0][0] = this.data[1][1] * this.data[2][2] - this.data[2][1] * this.data[1][2];
+        minor.data[1][0] = this.data[0][1] * this.data[2][2] - this.data[2][1] * this.data[0][2];
+        minor.data[2][0] = this.data[0][1] * this.data[1][2] - this.data[1][1] * this.data[0][2];
+
+        minor.data[0][1] = this.data[1][0] * this.data[2][2] - this.data[2][0] * this.data[1][2];
+        minor.data[1][1] = this.data[0][0] * this.data[2][2] - this.data[2][0] * this.data[0][2];
+        minor.data[2][1] = this.data[0][0] * this.data[1][2] - this.data[1][0] * this.data[0][2];
+
+        minor.data[0][2] = this.data[1][0] * this.data[2][1] - this.data[2][0] * this.data[1][1];
+        minor.data[1][2] = this.data[0][0] * this.data[2][1] - this.data[2][0] * this.data[0][1];
+        minor.data[2][2] = this.data[0][0] * this.data[1][1] - this.data[1][0] * this.data[0][1];
+
+        //Create the matrix of cofactors
+        var cofactor = new Mat3();
+
+        //Calculate the values
+        cofactor.data[0][0] = minor.data[0][0];
+        cofactor.data[1][0] = minor.data[1][0] * -1;
+        cofactor.data[2][0] = minor.data[2][0];
+
+        cofactor.data[0][1] = minor.data[0][1] * -1;
+        cofactor.data[1][1] = minor.data[1][1];
+        cofactor.data[2][1] = minor.data[2][1] * -1;
+
+        cofactor.data[0][2] = minor.data[0][2];
+        cofactor.data[1][2] = minor.data[1][2] * -1;
+        cofactor.data[2][2] = minor.data[2][2];
+
+        //Create the Adjugate matrix
+        var adjugate = cofactor.transposed;
+
+        //Find the detriment
+        var detriment = this.data[0][0] * minor.data[0][0] -
+            this.data[1][0] * minor.data[1][0] +
+            this.data[2][0] * minor.data[2][0];
+
+        //Multiply the adjugate by 1/detriment
+        var invDetriment = 1 / detriment;
+
+        this.data[0][0] = adjugate.data[0][0] * invDetriment;
+        this.data[1][0] = adjugate.data[1][0] * invDetriment;
+        this.data[2][0] = adjugate.data[2][0] * invDetriment;
+
+        this.data[0][1] = adjugate.data[0][1] * invDetriment;
+        this.data[1][1] = adjugate.data[1][1] * invDetriment;
+        this.data[2][1] = adjugate.data[2][1] * invDetriment;
+
+        this.data[0][2] = adjugate.data[0][2] * invDetriment;
+        this.data[1][2] = adjugate.data[1][2] * invDetriment;
+        this.data[2][2] = adjugate.data[2][2] * invDetriment;
+
+        //Return itself
+        return this;
+    },
+
+    /*
+        Mat3 : translated - Get the copy of the current Mat3 object translated by specified values
+        28/07/2016
+
+        @param[in] pX - The value to be translated along the X axis
+        @param[in] pY - The value to be translated along the Y axis
+
+        @return Mat3 - Returns a Mat3 holding the result of the translation
+
+        Example:
+        
+        //Get the world matrix after the player has moved
+        var futureMat = playerMatrix.translated(velocity.x, velocity.y);
+    */
+    translated: function(pX, pY) {
+        //Create a copy of the current Mat3
+        var temp = new Mat3(this);
+
+        //Translate the temp
+        temp.data[2][0] += pX;
+        temp.data[2][1] += pY;
 
-    //Return the temp
-    return temp;
-};
+        //Return the temp
+        return temp;
+    },
 
-/*
-    Mat3 : translate - Translate the current Mat3 object by the specified values
-    28/07/2016
+    /*
+        Mat3 : translate - Translate the current Mat3 object by the specified values
+        28/07/2016
 
-    @param[in] pX - The value to be translated along the X axis
-    @param[in] pY - The value to be translated along the Y axis
-
-    @return this - Returns itself once the function has ended
-
-    Example:
-    
-    //Move the player 
-    playerMatrix.translate(velocity.x, velocity.y);
-*/
-Mat3.prototype.translate = function(pX, pY) {
-    //Add the translation values
-    this.data[2][0] += pX;
-    this.data[2][1] += pY;
+        @param[in] pX - The value to be translated along the X axis
+        @param[in] pY - The value to be translated along the Y axis
+
+        @return this - Returns itself once the function has ended
 
-    //Return itself
-    return this;
-};
+        Example:
+        
+        //Move the player 
+        playerMatrix.translate(velocity.x, velocity.y);
+    */
+    translate: function(pX, pY) {
+        //Add the translation values
+        this.data[2][0] += pX;
+        this.data[2][1] += pY;
 
-/*
-    Mat3 : rotated - Get the copy of the current Mat3 object rotated by the specified value
-    28/07/2016
+        //Return itself
+        return this;
+    },
 
-    @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
-
-    @return Mat3 - Returns a Mat3 holding the result of the rotation
+    /*
+        Mat3 : rotated - Get the copy of the current Mat3 object rotated by the specified value
+        28/07/2016
 
-    Example:
-
-    //Get the world matrix after the player has turned
-    var futureMat = playerMatrix.rotated(PLAYER_TURN_SPEED);
-*/
-Mat3.prototype.rotated = function(pRot) {
-    //Create a matrix to hold the rotation
-    var rotMat = new Mat3();
+        @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
 
-    //Get the sin/cos values
-    var sin = Math.sin(pRot);
-    var cos = Math.cos(pRot);
+        @return Mat3 - Returns a Mat3 holding the result of the rotation
 
-    //Set the rotation values
-    rotMat.data[0][0] = cos;
-    rotMat.data[1][0] = -sin;
-    rotMat.data[0][1] = sin;
-    rotMat.data[1][1] = cos;
+        Example:
 
-    //Return the result of the multiplication
-    return this.multi(rotMat);
-};
+        //Get the world matrix after the player has turned
+        var futureMat = playerMatrix.rotated(PLAYER_TURN_SPEED);
+    */
+    rotated: function(pRot) {
+        //Create a matrix to hold the rotation
+        var rotMat = new Mat3();
 
-/*
-    Mat3 : rotate - Rotate the current Mat3 object by the specified value
-    28/07/2016
+        //Get the sin/cos values
+        var sin = Math.sin(pRot);
+        var cos = Math.cos(pRot);
 
-    @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
+        //Set the rotation values
+        rotMat.data[0][0] = cos;
+        rotMat.data[1][0] = -sin;
+        rotMat.data[0][1] = sin;
+        rotMat.data[1][1] = cos;
 
-    @return this - Returns itself once the function has ended
-
-    Example:
+        //Return the result of the multiplication
+        return this.multi(rotMat);
+    },
 
-    //Rotate the player
-    playerMatrix.rotate(Math.PI);
-*/
-Mat3.prototype.rotate = function(pRot) {
-    //Create a matrix to hold the rotation
-    var rotMat = new Mat3();
+    /*
+        Mat3 : rotate - Rotate the current Mat3 object by the specified value
+        28/07/2016
 
-    //Get the sin/cos values
-    var sin = Math.sin(pRot);
-    var cos = Math.cos(pRot);
+        @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
 
-    //Set the rotation values
-    rotMat.data[0][0] = cos;
-    rotMat.data[1][0] = -sin;
-    rotMat.data[0][1] = sin;
-    rotMat.data[1][1] = cos;
+        @return this - Returns itself once the function has ended
+
+        Example:
 
-    //Return the result of the multiplication
-    return this.multiSet(rotMat);
-};
+        //Rotate the player
+        playerMatrix.rotate(Math.PI);
+    */
+    rotate: function(pRot) {
+        //Create a matrix to hold the rotation
+        var rotMat = new Mat3();
 
-/*
-    Mat3 : scaled - Get the copy of the current Mat3 object scaled by the specified values
-    28/07/2016
+        //Get the sin/cos values
+        var sin = Math.sin(pRot);
+        var cos = Math.cos(pRot);
 
-    @param[in] pX - The value with which to scale the X axis of the Mat3
-    @param[in] pY - The value with which to scale the Y axis of the Mat3
+        //Set the rotation values
+        rotMat.data[0][0] = cos;
+        rotMat.data[1][0] = -sin;
+        rotMat.data[0][1] = sin;
+        rotMat.data[1][1] = cos;
 
-    @return Mat3 - Returns a Mat3 holding the result of the scaling
+        //Return the result of the multiplication
+        return this.multiSet(rotMat);
+    },
 
-    Example:
+    /*
+        Mat3 : scaled - Get the copy of the current Mat3 object scaled by the specified values
+        28/07/2016
 
-    //Get the world matrix after the player shrunk
-    var futureMat = playerMatrix.scaled(0.5, 0.5);
-*/
-Mat3.prototype.scaled = function(pX, pY) {
-    //Create the scale matrix
-    var sclMat = new Mat3();
+        @param[in] pX - The value with which to scale the X axis of the Mat3
+        @param[in] pY - The value with which to scale the Y axis of the Mat3
 
-    //Setup the scale values
-    sclMat.data[0][0] = pX;
-    sclMat.data[1][1] = pY;
+        @return Mat3 - Returns a Mat3 holding the result of the scaling
 
-    //Return the result of the multiplication
-    return this.multi(sclMat);
-};
+        Example:
 
-/*
-    Mat3 : scale - Scale the current Mat3 object by the specified values
-    28/07/2016
+        //Get the world matrix after the player shrunk
+        var futureMat = playerMatrix.scaled(0.5, 0.5);
+    */
+    scaled: function(pX, pY) {
+        //Create the scale matrix
+        var sclMat = new Mat3();
 
-    @param[in] pX - The value with which to scale the X axis of the Mat3
-    @param[in] pY - The value with which to scale the Y axis of the Mat3
+        //Setup the scale values
+        sclMat.data[0][0] = pX;
+        sclMat.data[1][1] = pY;
 
-    @return this - Returns itself once the function has ended
+        //Return the result of the multiplication
+        return this.multi(sclMat);
+    },
 
-    Example:
+    /*
+        Mat3 : scale - Scale the current Mat3 object by the specified values
+        28/07/2016
 
-    //Shrink the player
-    playerMatrix.scale(0.5, 0.5);
-*/
-Mat3.prototype.scale = function(pX, pY) {
-    //Create the scale matrix
-    var sclMat = new Mat3();
+        @param[in] pX - The value with which to scale the X axis of the Mat3
+        @param[in] pY - The value with which to scale the Y axis of the Mat3
 
-    //Setup the scale values
-    sclMat.data[0][0] = pX;
-    sclMat.data[1][1] = pY;
+        @return this - Returns itself once the function has ended
 
-    //Return the result of the multiplication
-    return this.multiSet(sclMat);
-};
+        Example:
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////                                                                                                            ////
-/////                                               Math Functions                                               ////
-/////                                                                                                            ////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Shrink the player
+        playerMatrix.scale(0.5, 0.5);
+    */
+    scale: function(pX, pY) {
+        //Create the scale matrix
+        var sclMat = new Mat3();
 
-/*
-    Mat3 : set - Set the current mat3 object to the values of another
-    28/07/2017
+        //Setup the scale values
+        sclMat.data[0][0] = pX;
+        sclMat.data[1][1] = pY;
 
-    @param[in] pMat - The Mat3 object to copy
+        //Return the result of the multiplication
+        return this.multiSet(sclMat);
+    },
 
-    @return this - Returns itself once the function has ended
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                               Math Functions                                               ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Example:
+    /*
+        Mat3 : set - Set the current mat3 object to the values of another
+        28/07/2017
 
-    //Copy the values of another matrix
-    copyMat.set(myMat3);
-*/
-Mat3.prototype.set = function(pMat) {
-    //Copy the values
-    this.data[0][0] = pMat.data[0][0];
-    this.data[1][0] = pMat.data[1][0];
-    this.data[2][0] = pMat.data[2][0];
+        @param[in] pMat - The Mat3 object to copy
 
-    this.data[0][1] = pMat.data[0][1];
-    this.data[1][1] = pMat.data[1][1];
-    this.data[2][1] = pMat.data[2][1];
+        @return this - Returns itself once the function has ended
 
-    this.data[0][2] = pMat.data[0][2];
-    this.data[1][2] = pMat.data[1][2];
-    this.data[2][2] = pMat.data[2][2];
+        Example:
 
-    //Return itself
-    return this;
-};
+        //Copy the values of another matrix
+        copyMat.set(myMat3);
+    */
+    set: function(pMat) {
+        //Copy the values
+        this.data[0][0] = pMat.data[0][0];
+        this.data[1][0] = pMat.data[1][0];
+        this.data[2][0] = pMat.data[2][0];
 
-/*
-    Mat3 : multi - Multiply the current Mat3 object by another
-    28/07/2016
+        this.data[0][1] = pMat.data[0][1];
+        this.data[1][1] = pMat.data[1][1];
+        this.data[2][1] = pMat.data[2][1];
 
-    @param[in] pMat - The Mat3 object to multiply the current by
+        this.data[0][2] = pMat.data[0][2];
+        this.data[1][2] = pMat.data[1][2];
+        this.data[2][2] = pMat.data[2][2];
 
-    @return Mat3 - Returns a Mat3 object holding the result of the multiplication
+        //Return itself
+        return this;
+    },
 
-    Example:
+    /*
+        Mat3 : multi - Multiply the current Mat3 object by another
+        28/07/2016
 
-    //Get the players global transform
-    var globalTransform = worldTransform.multi(localTransform);
-*/
-Mat3.prototype.multi = function(pMat) {
-    //Create a new Mat3 to hold the result
-    var temp = new Mat3();
+        @param[in] pMat - The Mat3 object to multiply the current by
 
-    //Preform the multiplication
-    temp.data[0][0] = this.data[0][0] * pMat.data[0][0] + this.data[1][0] * pMat.data[0][1] + this.data[2][0] * pMat.data[0][2];
-    temp.data[1][0] = this.data[0][0] * pMat.data[1][0] + this.data[1][0] * pMat.data[1][1] + this.data[2][0] * pMat.data[1][2];
-    temp.data[2][0] = this.data[0][0] * pMat.data[2][0] + this.data[1][0] * pMat.data[2][1] + this.data[2][0] * pMat.data[2][2];
+        @return Mat3 - Returns a Mat3 object holding the result of the multiplication
 
-    temp.data[0][1] = this.data[0][1] * pMat.data[0][0] + this.data[1][1] * pMat.data[0][1] + this.data[2][1] * pMat.data[0][2];
-    temp.data[1][1] = this.data[0][1] * pMat.data[1][0] + this.data[1][1] * pMat.data[1][1] + this.data[2][1] * pMat.data[1][2];
-    temp.data[2][1] = this.data[0][1] * pMat.data[2][0] + this.data[1][1] * pMat.data[2][1] + this.data[2][1] * pMat.data[2][2];
+        Example:
 
-    temp.data[0][2] = this.data[0][2] * pMat.data[0][0] + this.data[1][2] * pMat.data[0][1] + this.data[2][2] * pMat.data[0][2];
-    temp.data[1][2] = this.data[0][2] * pMat.data[1][0] + this.data[1][2] * pMat.data[1][1] + this.data[2][2] * pMat.data[1][2];
-    temp.data[2][2] = this.data[0][2] * pMat.data[2][0] + this.data[1][2] * pMat.data[2][1] + this.data[2][2] * pMat.data[2][2];
+        //Get the players global transform
+        var globalTransform = worldTransform.multi(localTransform);
+    */
+    multi: function(pMat) {
+        //Create a new Mat3 to hold the result
+        var temp = new Mat3();
 
-    //Return the temp
-    return temp;
-};
+        //Preform the multiplication
+        temp.data[0][0] = this.data[0][0] * pMat.data[0][0] + this.data[1][0] * pMat.data[0][1] + this.data[2][0] * pMat.data[0][2];
+        temp.data[1][0] = this.data[0][0] * pMat.data[1][0] + this.data[1][0] * pMat.data[1][1] + this.data[2][0] * pMat.data[1][2];
+        temp.data[2][0] = this.data[0][0] * pMat.data[2][0] + this.data[1][0] * pMat.data[2][1] + this.data[2][0] * pMat.data[2][2];
 
-/*
-    Mat3 : multiSet - Set the current Mat3 object to the multiplication between it and the passed in Mat3
-    28/07/2016
+        temp.data[0][1] = this.data[0][1] * pMat.data[0][0] + this.data[1][1] * pMat.data[0][1] + this.data[2][1] * pMat.data[0][2];
+        temp.data[1][1] = this.data[0][1] * pMat.data[1][0] + this.data[1][1] * pMat.data[1][1] + this.data[2][1] * pMat.data[1][2];
+        temp.data[2][1] = this.data[0][1] * pMat.data[2][0] + this.data[1][1] * pMat.data[2][1] + this.data[2][1] * pMat.data[2][2];
 
-    @param[in] pMat - The Mat3 object to multiply the current by
+        temp.data[0][2] = this.data[0][2] * pMat.data[0][0] + this.data[1][2] * pMat.data[0][1] + this.data[2][2] * pMat.data[0][2];
+        temp.data[1][2] = this.data[0][2] * pMat.data[1][0] + this.data[1][2] * pMat.data[1][1] + this.data[2][2] * pMat.data[1][2];
+        temp.data[2][2] = this.data[0][2] * pMat.data[2][0] + this.data[1][2] * pMat.data[2][1] + this.data[2][2] * pMat.data[2][2];
 
-    @return this - Returns itself once the function has ended
+        //Return the temp
+        return temp;
+    },
 
-    Example:
+    /*
+        Mat3 : multiSet - Set the current Mat3 object to the multiplication between it and the passed in Mat3
+        28/07/2016
 
-    //Get a transform
-    translationMat.multiSet(rotationMat);
-*/
-Mat3.prototype.multiSet = function(pMat) {
-    //Create a copy of the current Mat3
-    var temp = new Mat3(this);
+        @param[in] pMat - The Mat3 object to multiply the current by
 
-    //Preform the multiplication
-    this.data[0][0] = temp.data[0][0] * pMat.data[0][0] + temp.data[1][0] * pMat.data[0][1] + temp.data[2][0] * pMat.data[0][2];
-    this.data[1][0] = temp.data[0][0] * pMat.data[1][0] + temp.data[1][0] * pMat.data[1][1] + temp.data[2][0] * pMat.data[1][2];
-    this.data[2][0] = temp.data[0][0] * pMat.data[2][0] + temp.data[1][0] * pMat.data[2][1] + temp.data[2][0] * pMat.data[2][2];
+        @return this - Returns itself once the function has ended
 
-    this.data[0][1] = temp.data[0][1] * pMat.data[0][0] + temp.data[1][1] * pMat.data[0][1] + temp.data[2][1] * pMat.data[0][2];
-    this.data[1][1] = temp.data[0][1] * pMat.data[1][0] + temp.data[1][1] * pMat.data[1][1] + temp.data[2][1] * pMat.data[1][2];
-    this.data[2][1] = temp.data[0][1] * pMat.data[2][0] + temp.data[1][1] * pMat.data[2][1] + temp.data[2][1] * pMat.data[2][2];
+        Example:
 
-    this.data[0][2] = temp.data[0][2] * pMat.data[0][0] + temp.data[1][2] * pMat.data[0][1] + temp.data[2][2] * pMat.data[0][2];
-    this.data[1][2] = temp.data[0][2] * pMat.data[1][0] + temp.data[1][2] * pMat.data[1][1] + temp.data[2][2] * pMat.data[1][2];
-    this.data[2][2] = temp.data[0][2] * pMat.data[2][0] + temp.data[1][2] * pMat.data[2][1] + temp.data[2][2] * pMat.data[2][2];
+        //Get a transform
+        translationMat.multiSet(rotationMat);
+    */
+    multiSet: function(pMat) {
+        //Create a copy of the current Mat3
+        var temp = new Mat3(this);
 
-    //Return itself
-    return this;
-};
+        //Preform the multiplication
+        this.data[0][0] = temp.data[0][0] * pMat.data[0][0] + temp.data[1][0] * pMat.data[0][1] + temp.data[2][0] * pMat.data[0][2];
+        this.data[1][0] = temp.data[0][0] * pMat.data[1][0] + temp.data[1][0] * pMat.data[1][1] + temp.data[2][0] * pMat.data[1][2];
+        this.data[2][0] = temp.data[0][0] * pMat.data[2][0] + temp.data[1][0] * pMat.data[2][1] + temp.data[2][0] * pMat.data[2][2];
 
-/*
-    Mat3 : multiVec - Multiply the current Mat3 object by a Vec2 object
-    09/08/2016
+        this.data[0][1] = temp.data[0][1] * pMat.data[0][0] + temp.data[1][1] * pMat.data[0][1] + temp.data[2][1] * pMat.data[0][2];
+        this.data[1][1] = temp.data[0][1] * pMat.data[1][0] + temp.data[1][1] * pMat.data[1][1] + temp.data[2][1] * pMat.data[1][2];
+        this.data[2][1] = temp.data[0][1] * pMat.data[2][0] + temp.data[1][1] * pMat.data[2][1] + temp.data[2][1] * pMat.data[2][2];
 
-    @param[in] pVec - The Vec2 object to multiply the current by
+        this.data[0][2] = temp.data[0][2] * pMat.data[0][0] + temp.data[1][2] * pMat.data[0][1] + temp.data[2][2] * pMat.data[0][2];
+        this.data[1][2] = temp.data[0][2] * pMat.data[1][0] + temp.data[1][2] * pMat.data[1][1] + temp.data[2][2] * pMat.data[1][2];
+        this.data[2][2] = temp.data[0][2] * pMat.data[2][0] + temp.data[1][2] * pMat.data[2][1] + temp.data[2][2] * pMat.data[2][2];
 
-    @return Vec2 - Returns a Vec2 object holding the result of the multiplication
+        //Return itself
+        return this;
+    },
 
-    Example:
+    /*
+        Mat3 : multiVec - Multiply the current Mat3 object by a Vec2 object
+        09/08/2016
 
-    //Transform a point by a matrix
-    var transformedPoint = globalMat.multiVec(point);
-*/
-Mat3.prototype.multiVec = function(pVec) {
-    return new Vec2(
-        this.data[0][0] * pVec.x + this.data[1][0] * pVec.y + this.data[2][0],
-        this.data[0][1] * pVec.x + this.data[1][1] * pVec.y + this.data[2][1]
-    );
-};
+        @param[in] pVec - The Vec2 object to multiply the current by
+
+        @return Vec2 - Returns a Vec2 object holding the result of the multiplication
+
+        Example:
+
+        //Transform a point by a matrix
+        var transformedPoint = globalMat.multiVec(point);
+    */
+    multiVec: function(pVec) {
+        return new Vec2(
+            this.data[0][0] * pVec.x + this.data[1][0] * pVec.y + this.data[2][0],
+            this.data[0][1] * pVec.x + this.data[1][1] * pVec.y + this.data[2][1]
+        );
+    },
+});
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
