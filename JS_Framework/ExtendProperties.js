@@ -154,9 +154,9 @@ Math.randomRange = function(pMin, pMax) {
     Math : sinT - Returns a value between 0-1 that changes over time
     20/05/2017
 
-    param[in] pScale - A number containing the scale to apply (speed)
+    param[in] pScale - A number containing the scale to apply (Default 1)
 
-    return number - Returns a in the range of 0 - 1
+    return number - Returns a number in the range of 0-1
 */
 Math.sinT = function(pScale) {
     //Clean the scale
@@ -164,6 +164,22 @@ Math.sinT = function(pScale) {
 
     //Return the number
     return ((Math.sin(Date.now() * pScale / 1000) + 1) / 2);
+};
+
+/*
+    Math : cosT - Returns a value between 0-1 that changes over time
+    04/07/2017
+
+    param[in] pScale - A number containing the scale to apply (Default 1)
+
+    return number - Returns a number in the range of 0-1
+*/
+Math.cosT = function(pScale) {
+    //Clean the scale
+    if (typeof pScale !== "number") pScale = 1;
+
+    //Return the number
+    return ((Math.cos(Date.now() * pScale / 1000) + 1) / 2);
 };
 
 /*
@@ -231,11 +247,12 @@ String.isAlphaNum = function(pChar) {
     19/05/2017
 
     param[in] pURL - The URL to make the HTTP request to
-    param[in] pCallback - An optional function callback that accepts a string parameter
-                          holding the response from the URL (Default null)
+    param[in] pCallbacks - An optional object containing functions that recieve text based on 
+                           success state of the request. Functions should be applied to the 'success'
+                           and 'failure' properties (Default null)
     param[in] pData - An object that holds information to pass to URL (Default null)
 */
-function asynchRequest(pURL, pCallback, pData) {
+function asynchRequest(pURL, pCallbacks, pData) {
     //Create the HTTP request
     let request = new XMLHttpRequest();
 
@@ -243,14 +260,27 @@ function asynchRequest(pURL, pCallback, pData) {
     request.onreadystatechange = function() {
         //Check the state
         if (request.readyState === XMLHttpRequest.DONE) {
+            //Clean the callbacks object
+            pCallbacks = Validate.type(pCallbacks, "object", {});
+
             //Check the request status
             if (request.status === 200) {
                 //Raise the callback if it exists
-                if (typeof pCallback === "function") pCallback(request.responseText);
+                if (typeof pCallbacks["success"] === "function")
+                    pCallbacks["success"](request.responseText);
             }
 
             //Output error message
-            else throw new Error("Error occured when attempting to access " + pURL + ". ERROR: " + request.status);
+            else {
+                //Check if there is a callback
+                if (typeof pCallbacks["failure"] === "function") pCallbacks["failure"]({
+                    url: pURL,
+                    error: request.status
+                });
+
+                //Otherwise ouput error message
+                else throw new Error("Error occured when attempting to access " + pURL + ". ERROR: " + request.status);
+            }
         }
     };
 
@@ -349,7 +379,7 @@ var Validate = {
         param[in] pVal - The value to check
         param[in] pType - A string containing the type that should be evaluated
         param[in] pDefault - A default value to be given if the types don't match.
-                             Only used if pStrict flag is set to false
+                             Only required if pStrict flag is set to false
         param[in] pStrict - A boolean flag to be used to indicate if an error should be thrown
                             if the types don't match (Default false)
 
@@ -378,23 +408,29 @@ var Validate = {
         20/05/2017
 
         param[in] pVal - The value to check
-        param[in] pType - The type to check for instance (Note: Must not require constructor parameters)
+        param[in] pType - The type to check for instance
+        param[in] pDefault - A default object to be used if there is not an instance match
+                             Only required if pStrict flag is set to false (Default uses new instance
+                             of pType)
         param[in] pStrict - A boolean flag to be used to indicate if an error should be thrown
                             if pVal is not instance of pType (Default false)
 
         return value - Returns either the pVal or a new instance of pType depending the results
     */
-    instance: function(pVal, pType, pStrict) {
+    instance: function(pVal, pType, pDefault, pStrict) {
         //Clean the flags
         if (typeof pType !== "function") throw new Error("pType parameter must be a function to perform instanceof check");
         if (typeof pStrict !== "boolean") pStrict = false;
 
         //If the value is not an instance
         if (!(pVal instanceof pType)) {
-            //Check if the valudation is strict
+            //Check if the validation is strict
             if (pStrict) throw new Error("Validation of instance failed. " + pVal + " was supposed to be an instance of " + pType);
 
-            //Return a new instancew of the object
+            //Check if a default has been set
+            else if (typeof pDefault !== "undefined") return pDefault;
+
+            //Return a new instance of the object
             else return new pType();
         }
 

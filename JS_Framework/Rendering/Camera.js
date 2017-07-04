@@ -26,10 +26,10 @@
                            viewport dimensions on the supplied canvas
     28/08/2016
 
-    @param[in] pCanvas - The canvas object to use for scaling the camera view
-    @param[in] pViewWidth - The width of the cameras view (World Units)
-    @param[in] pViewHeight - The height of the cameras view (World Units)
-    @param[in] pDistance - Scales the drawn elements to give the appearance
+    param[in] pCanvas - The canvas object to use for scaling the camera view
+    param[in] pViewWidth - The width of the cameras view (World Units)
+    param[in] pViewHeight - The height of the cameras view (World Units)
+    param[in] pDistance - Scales the drawn elements to give the appearance
                            of distance. 1 is regular. Must be greater than 0.
                            (Default 1) 
     
@@ -78,7 +78,7 @@ ExtendProperties(Camera, {
         Camera : position - Return the world position of the Camera object
         28/08/2016
 
-        @return Vec2 - Returns a Vec2 object containing the position
+        return Vec2 - Returns a Vec2 object containing the position
 
         Example:
 
@@ -93,7 +93,7 @@ ExtendProperties(Camera, {
         Camera : position - Set the world position of the Camera object
         28/08/2016
 
-        @param pPos - A Vec2 object containing the new Camera position
+        param pPos - A Vec2 object containing the new Camera position
 
         Example:
 
@@ -108,7 +108,7 @@ ExtendProperties(Camera, {
         Camera : x - Return the X axis world position of the Camera object
         28/08/2016
 
-        @return number - Returns the X position as a number
+        return number - Returns the X position as a number
 
         Example:
 
@@ -123,7 +123,7 @@ ExtendProperties(Camera, {
         Camera : x - Set the X world position of the Camera object
         28/08/2016
 
-        @param[in] pVal - The new value to set as the X position
+        param[in] pVal - The new value to set as the X position
 
         Example:
 
@@ -138,7 +138,7 @@ ExtendProperties(Camera, {
         Camera : y - Get the Y world position of the Camera object
         28/08/2016
 
-        @return number - Returns the Y position as a number
+        return number - Returns the Y position as a number
 
         Example:
 
@@ -153,7 +153,7 @@ ExtendProperties(Camera, {
         Camera : y - Set the Y world position of the Camera object
         28/08/2016
 
-        @param[in] pVal - The new value to set as the Y position
+        param[in] pVal - The new value to set as the Y position
 
         Example:
 
@@ -168,7 +168,7 @@ ExtendProperties(Camera, {
         Camera : rotation - Get the rotation of the Camera object
         28/08/2016
 
-        @return number - Returns the current rotation of the Camera in degrees
+        return number - Returns the current rotation of the Camera in degrees
 
         Example:
 
@@ -183,7 +183,7 @@ ExtendProperties(Camera, {
         Camera : rotation - Set the rotation of the Camera object
         28/08/2016
 
-        @param[in] pVal - A number defining the new rotation of the camera 
+        param[in] pVal - A number defining the new rotation of the camera 
                           object in degrees
 
         Example:
@@ -199,7 +199,7 @@ ExtendProperties(Camera, {
         Camera : distance - Get the scale value emulating distance from the canvas
         28/08/2016
 
-        @return number - Returns a number representing the distance of the Camera
+        return number - Returns a number representing the distance of the Camera
 
         Example:
 
@@ -214,7 +214,7 @@ ExtendProperties(Camera, {
         Camera : distance - Set the scale value emulating distance from the canvas
         28/08/2016
 
-        @param[in] pVal - The number vlaue to set the distance to (Must be greater
+        param[in] pVal - The number vlaue to set the distance to (Must be greater
                           than 0)
 
         Example:
@@ -235,7 +235,7 @@ ExtendProperties(Camera, {
         Camera : canvasDimensions - Get the current canvas dimensions that are being used for the Camera object
         29/09/2016
 
-        @return Vec2 - Returns a Vec2 object with the canvas dimensions contained
+        return Vec2 - Returns a Vec2 object with the canvas dimensions contained
 
         Example:
 
@@ -250,7 +250,7 @@ ExtendProperties(Camera, {
         Camera : canvasDimensions - Set the canvas dimensions that are used for the Camera object
         28/08/2016
 
-        @param[in] pDim - A Vec2 object that contains the new canvas dimensions
+        param[in] pDim - A Vec2 object that contains the new canvas dimensions
 
         Example:
 
@@ -278,7 +278,7 @@ ExtendProperties(Camera, {
         Camera : viewDimensions - Get the viewport dimensions of the Camera object
         28/08/2016
 
-        @return Vec2 - Returns a Vec2 object containing the viewport dimensions
+        return Vec2 - Returns a Vec2 object containing the viewport dimensions
 
         Example:
 
@@ -293,7 +293,7 @@ ExtendProperties(Camera, {
         Camera : viewDimensions - Set the viewport dimensions of the Camera object
         28/08/2016
 
-        @param[in] pDim - A Vec2 object containing the new viewport dimensions for
+        param[in] pDim - A Vec2 object containing the new viewport dimensions for
                           the Camera object
 
         Example:
@@ -318,7 +318,7 @@ ExtendProperties(Camera, {
         Camera : viewWidth - Get the viewport width of the Camera object
         28/08/2016
 
-        @return number - Returns a number with the viewport width of the Camera
+        return number - Returns a number with the viewport width of the Camera
 
         Example:
 
@@ -333,7 +333,7 @@ ExtendProperties(Camera, {
         Camera : viewWidth - Set the viewport width of the Camera object
         28/08/2016
 
-        @param[in] pVal - A number representing the new width of the Camera
+        param[in] pVal - A number representing the new width of the Camera
                           objects viewport
 
         Example:
@@ -356,7 +356,7 @@ ExtendProperties(Camera, {
         Camera : viewHeight - Get the viewport height of the Camera object
         28/08/2016
 
-        @return number - Returns a number with the viewport height of the Camera
+        return number - Returns a number with the viewport height of the Camera
 
         Example:
 
@@ -371,7 +371,7 @@ ExtendProperties(Camera, {
         Camera : viewHeight - Set the viewport height of the Camera object
         28/08/2016
 
-        @param[in] pVal - A number representing the new height of the Camera
+        param[in] pVal - A number representing the new height of the Camera
                           objects viewport
 
         Example:
@@ -394,7 +394,7 @@ ExtendProperties(Camera, {
         Camera : globalMat - Get the global matrix for the Camera object
         28/08/2016
 
-        @return Mat3 - Returns a Mat3 object holding the global transform for
+        return Mat3 - Returns a Mat3 object holding the global transform for
                        the Camera object
 
         Example:
@@ -412,7 +412,7 @@ ExtendProperties(Camera, {
         Camera : view - Get the view matrix from the camera object
         28/08/2016
 
-        @return Mat3 - Returns a Mat3 object holding the view matrix for the 
+        return Mat3 - Returns a Mat3 object holding the view matrix for the 
                        Camera object
 
         Example:
@@ -428,7 +428,7 @@ ExtendProperties(Camera, {
         Camera : projection - Get the projection matrix from the camera object
         21/11/2016
 
-        @return Mat3 - Returns a Mat3 object holding the projection matrix for the
+        return Mat3 - Returns a Mat3 object holding the projection matrix for the
                        Camera object
 
         Example:
@@ -445,7 +445,7 @@ ExtendProperties(Camera, {
                                   object
         28/08/2016
 
-        @return Mat3 - Returns a Mat3 object holding the projection matrix for
+        return Mat3 - Returns a Mat3 object holding the projection matrix for
                        Camera object
 
         Example:
@@ -462,7 +462,7 @@ ExtendProperties(Camera, {
                                 to the viewable canvas
         21/11/2016
 
-        @return Mat3 - Returns a Mat3 object holding the scaleing to apply to UI
+        return Mat3 - Returns a Mat3 object holding the scaleing to apply to UI
                        elements
 
         Example:
@@ -473,5 +473,30 @@ ExtendProperties(Camera, {
     get projectionUI() {
         return createScaleMat(this.__Internal__Dont__Modify__.viewportScale.x,
             this.__Internal__Dont__Modify__.viewportScale.y);
+    },
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                             Conversion Functions                                           ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+        Camera : screenPosToWorld - Convert a screen position to a world coordinate
+        04/07/2017
+
+        param[in] pPos - A Vec2 object holding the screen position to convert
+
+        return Vec2 - Returns a Vec2 object containing the world position
+    */
+    screenPosToWorld: function(pPos) {
+        //Check parameter
+        pPos = Validate.instance(pPos, Vec2, null, true);
+
+        //Get the projection view of the camera
+        let projViewInv = this.projectionView.inverse();
+
+        //Return the conversion
+        return projViewInv.multiVec(pPos);
     },
 });

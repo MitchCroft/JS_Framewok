@@ -25,9 +25,9 @@
     Vec2 : Constructor - Initialise a Vec2 object with starting values
     28/07/2016
 
-    @param[in] pFirst - Either a Vec2 object to copy the values of, a number
+    param[in] pFirst - Either a Vec2 object to copy the values of, a number
                         to be assigned to the X axis or undefined
-    @param[in] pSecond - Either a number to be assigned to the Y axis or
+    param[in] pSecond - Either a number to be assigned to the Y axis or
                          undefined
 
     Example:
@@ -72,7 +72,7 @@ ExtendProperties(Vec2, {
         Vec2 : clone - Create a copy of the Vec2 object
         28/07/2016
 
-        @return Vec2 - Returns a new Vec2 object with the same values as the current
+        return Vec2 - Returns a new Vec2 object with the same values as the current
 
         Example:
 
@@ -87,7 +87,7 @@ ExtendProperties(Vec2, {
         Vec2 : mag - Returns the magnitude/length of the Vec2 object
         28/07/2016
 
-        @return number - Returns the magnitude/length as a single number
+        return number - Returns the magnitude/length as a single number
 
         Example:
 
@@ -102,7 +102,7 @@ ExtendProperties(Vec2, {
         Vec2 : sqrMag - Returns the square magnitude/length of the Vec2 object
         28/07/2016
 
-        @return number - Returns the magnitude/length as a single number
+        return number - Returns the magnitude/length as a single number
 
         Example:
 
@@ -117,7 +117,7 @@ ExtendProperties(Vec2, {
         Vec2 : normalized - Returns the normal of the Vec2 object without modifying it
         28/07/2016
 
-        @return Vec2 - Returns a Vec2 object holding the normal of the current Vec2 object
+        return Vec2 - Returns a Vec2 object holding the normal of the current Vec2 object
 
         Example:
 
@@ -132,7 +132,7 @@ ExtendProperties(Vec2, {
         Vec2 : negative - Returns the negative of the current Vec2 object
         28/07/2016
 
-        @return Vec2 - Returns a new Vec2 object that is the negative of the current Vec2 object
+        return Vec2 - Returns a new Vec2 object that is the negative of the current Vec2 object
 
         Example:
 
@@ -147,7 +147,7 @@ ExtendProperties(Vec2, {
         Vec2 : right - Returns the vector perpendicular to the current in the clockwise direction
         28/07/2016
 
-        @return Vec2 - Returns a new Vec2 object that holds the perpendicular values
+        return Vec2 - Returns a new Vec2 object that holds the perpendicular values
 
         Example:
 
@@ -162,7 +162,7 @@ ExtendProperties(Vec2, {
         Vec2 : left - Returns the vector perpendicular to the current in the anti-clockwise direction
         28/07/2016
 
-        @return Vec2 - Returns a new Vec2 object that holds the perpendicular values
+        return Vec2 - Returns a new Vec2 object that holds the perpendicular values
 
         Example:
 
@@ -183,7 +183,7 @@ ExtendProperties(Vec2, {
         Vec2 : reset - Reset the Vec2 object to zero on both axis
         28/07/2016
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -202,7 +202,7 @@ ExtendProperties(Vec2, {
         Vec2 : normalize - Normalizes the axis of the Vec2 object to give a magnitude of 1 (Or 0 if both axis' are 0)
         28/07/2016
 
-        @return this - Returns itself once the function ended
+        return this - Returns itself once the function ended
 
         Example:
 
@@ -232,9 +232,9 @@ ExtendProperties(Vec2, {
         Vec2 : dot - Returns the dot product between 2 Vec2 objects (The current and the passed in object)
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to get the dot product between
+        param[in] pVec - The Vec2 object to get the dot product between
 
-        @return number - Returns the dot product as a single number
+        return number - Returns the dot product as a single number
 
         Example:
 
@@ -253,9 +253,9 @@ ExtendProperties(Vec2, {
         Vec2 : rotate - Rotate the current Vec2 object by the passed in amount of radians
         28/06/2016
 
-        @param[in] pRot - The amount of radians to rotate the vector by
+        param[in] pRot - The amount of radians to rotate the vector by
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -283,9 +283,9 @@ ExtendProperties(Vec2, {
         Vec2 : rotated - Return a copy of the current Vec2 object rotatated by the passed in amount of radians
         26/10/2016
 
-        @param[in] pRot - The amount of radians to rotate the vector by
+        param[in] pRot - The amount of radians to rotate the vector by
 
-        @return Vec2 - Returns a Vec2 object contianing the result of the rotation
+        return Vec2 - Returns a Vec2 object contianing the result of the rotation
 
         Example:
 
@@ -310,10 +310,10 @@ ExtendProperties(Vec2, {
                       by the scale of pT
         28/07/2016
 
-        @param[in] pVec - The second Vec2 object which is used as the end point (Returned when pT is 1)
-        @param[in] pT - The scale with which to interpolate between the two Vec2 objects (Number between 0 - 1)
+        param[in] pVec - The second Vec2 object which is used as the end point (Returned when pT is 1)
+        param[in] pT - The scale with which to interpolate between the two Vec2 objects (Number between 0 - 1)
 
-        @return Vec2 - Returns a new Vec2 object that interpolated between the current and pVec by pT
+        return Vec2 - Returns a new Vec2 object that interpolated between the current and pVec by pT
 
         Example:
 
@@ -329,9 +329,9 @@ ExtendProperties(Vec2, {
         Vec2 : toString - Get the current Vec2 object as a string
         28/07/2016
 
-        @param[in] pDecimal - The number of decimal places to round the axis values to (Default 3)
+        param[in] pDecimal - The number of decimal places to round the axis values to (Default 3)
 
-        @return string - Returns the Vec2 object as a string
+        return string - Returns the Vec2 object as a string
 
         Example:
 
@@ -357,9 +357,9 @@ ExtendProperties(Vec2, {
         Vec2 : set - Set the values of the current Vec2 object to that of the passed in Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to copy
+        param[in] pVec - The Vec2 object to copy
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -379,9 +379,9 @@ ExtendProperties(Vec2, {
         Vec2 : equal - Determines if the passed in the Vec2 object is equivelant to the current Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to check against
+        param[in] pVec - The Vec2 object to check against
 
-        @return bool - Returns true if the two Vec2 objects are equivelant
+        return bool - Returns true if the two Vec2 objects are equivelant
 
         Example:
 
@@ -398,9 +398,9 @@ ExtendProperties(Vec2, {
         Vec2 : notEqual - Determines if the passed in Vec2 object is different to the current Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to check against 
+        param[in] pVec - The Vec2 object to check against 
 
-        @return bool - Returns true if the two Vec2 objects are different
+        return bool - Returns true if the two Vec2 objects are different
 
         Example:
 
@@ -418,9 +418,9 @@ ExtendProperties(Vec2, {
                       in Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to compare against
+        param[in] pVec - The Vec2 object to compare against
 
-        @return bool - Returns true if the current vec2 object has less magnitude/length then the passed
+        return bool - Returns true if the current vec2 object has less magnitude/length then the passed
                        in Vec2 object
 
         Example:
@@ -439,9 +439,9 @@ ExtendProperties(Vec2, {
                            then the passed in Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to compare against
+        param[in] pVec - The Vec2 object to compare against
 
-        @return bool - Returns true if the current Vec2 object has less then or equal magnitude/length
+        return bool - Returns true if the current Vec2 object has less then or equal magnitude/length
                        then the passed in Vec2 object
 
         Example:
@@ -460,9 +460,9 @@ ExtendProperties(Vec2, {
                          in Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to compare against
+        param[in] pVec - The Vec2 object to compare against
 
-        @return bool - Returns true if the current Vec2 object has a greater magnitude/length then the 
+        return bool - Returns true if the current Vec2 object has a greater magnitude/length then the 
                        passed in Vec2 object
 
         Example:
@@ -481,9 +481,9 @@ ExtendProperties(Vec2, {
                               then the passed in Vec2 object
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to compare against
+        param[in] pVec - The Vec2 object to compare against
 
-        @return bool - Returns true if the current Vec2 object has a greater then or equal magnitude/length
+        return bool - Returns true if the current Vec2 object has a greater then or equal magnitude/length
                        then the passed in Vec2 object
 
         Example:
@@ -501,9 +501,9 @@ ExtendProperties(Vec2, {
         Vec2 : add - Get the result of adding a Vec2 object to the current
         28/07/2016
 
-        @param[in]  pVec - The Vec2 object to add to the current
+        param[in]  pVec - The Vec2 object to add to the current
 
-        @return Vec2 - Returns a Vec2 object holding the result of the addition
+        return Vec2 - Returns a Vec2 object holding the result of the addition
 
         Example:
 
@@ -518,9 +518,9 @@ ExtendProperties(Vec2, {
         Vec2 : addSet - Add the values of antoher Vec2 object to the current
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to add to the current
+        param[in] pVec - The Vec2 object to add to the current
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -540,9 +540,9 @@ ExtendProperties(Vec2, {
         Vec2 : subtract - Get the result of subtracting a Vec2 object from the current
         28/07/2016
 
-        @param[in] pVec - The Vec2 object to subtract from the current
+        param[in] pVec - The Vec2 object to subtract from the current
 
-        @return Vec2 - Returns a Vec2 object holding the result of the subtraction
+        return Vec2 - Returns a Vec2 object holding the result of the subtraction
 
         Example:
 
@@ -557,9 +557,9 @@ ExtendProperties(Vec2, {
         Vec2 : subtractSet - Subtract the values of another Vec2 object from the current
         18/07/2016
 
-        @param[in] pVec - The Vec2 object to subtract from the current
+        param[in] pVec - The Vec2 object to subtract from the current
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -579,9 +579,9 @@ ExtendProperties(Vec2, {
         Vec2 : multi - Get the result of multiplying the current Vec2 object by a number
         28/07/2016
 
-        @param[in] pSclr - The number value to multiply the current by
+        param[in] pSclr - The number value to multiply the current by
 
-        @return Vec2 - returns a Vec2 object holding the result of the multiplication
+        return Vec2 - returns a Vec2 object holding the result of the multiplication
 
         Example:
 
@@ -596,9 +596,9 @@ ExtendProperties(Vec2, {
         Vec2 : multiSet - Multiply the current Vec2 object by a number
         28/07/2016
 
-        @param[in] pSclr - The number value to multiply the current by
+        param[in] pSclr - The number value to multiply the current by
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -619,9 +619,9 @@ ExtendProperties(Vec2, {
         Vec2 : div - Get the result of dividing the current Vec2 object by a number
         28/07/2016
 
-        @param[in] pSclr - The number to divide the current by
+        param[in] pSclr - The number to divide the current by
 
-        @return Vec2 - Returns a Vec2 object holding the result of the division
+        return Vec2 - Returns a Vec2 object holding the result of the division
 
         Example:
 
@@ -636,9 +636,9 @@ ExtendProperties(Vec2, {
         Vec2 : divSet - Divide the current Vec2 object by a number
         28/07/2016
 
-        @param[in] pSclr - The number to divide the current by
+        param[in] pSclr - The number to divide the current by
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -667,11 +667,11 @@ ExtendProperties(Vec2, {
                by pT
     28/07/2016
 
-    @param[in] pStart - The starting point of the interpolation (pT of 0 returns this)
-    @param[in] pEnd - The end point of the interpolation (pT of 1 returns this)
-    @param[in] pT - The scale with which to interpolate the two Vec2 objects (Between 0 - 1)
+    param[in] pStart - The starting point of the interpolation (pT of 0 returns this)
+    param[in] pEnd - The end point of the interpolation (pT of 1 returns this)
+    param[in] pT - The scale with which to interpolate the two Vec2 objects (Between 0 - 1)
 
-    @return Vec2 - Returns the interpolated values as a new Vec2 object
+    return Vec2 - Returns the interpolated values as a new Vec2 object
 
     Example:
 
@@ -693,9 +693,9 @@ function vec2Lerp(pStart, pEnd, pT) {
     cleanRotation - Given any degree rotation bring it back to the 0 - 359 range
     30/08/2016
 
-    @param[in] pRot - The rotation value to clean
+    param[in] pRot - The rotation value to clean
 
-    @return number - Returns the value of pRot bound to 0 - 359
+    return number - Returns the value of pRot bound to 0 - 359
 
     Example:
 

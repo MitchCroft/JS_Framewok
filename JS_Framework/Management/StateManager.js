@@ -61,7 +61,7 @@ var StateManager = new function() {
         StateManager : setGameFunction - Set the function that will be called every animation frame
         17/06/2016
     
-        @param[in] pFunc - The function that will be called every frame (Takes deltaTime as the only parameter)
+        param[in] pFunc - The function that will be called every frame (Takes deltaTime as the only parameter)
     
         Example:
     

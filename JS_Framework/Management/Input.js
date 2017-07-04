@@ -60,7 +60,7 @@ var Input = new function() {
         This function must be called oonce (and only once) per cycle. Call this function at the start of 
         your game loop.
 
-        @param[in] pDelta - The delta time for cycle
+        param[in] pDelta - The delta time for the cycle
 
         Example:
 
@@ -143,7 +143,7 @@ var Input = new function() {
         Input : setCanvas - Sets the canvas object that will be used to offset the mouse position
         29/07/2016
 
-        @param[in] pCnv - A reference to the canvas object present on HTML document
+        param[in] pCnv - A reference to the canvas object present on HTML document
 
         Example:
 
@@ -169,9 +169,9 @@ var Input = new function() {
         Input : addAxis - Add a new InputAxis object to be used by the Input manager
         29/07/2016
 
-        @param[in] pAxis - The new InputAxis object to add to the Input manager
+        param[in] pAxis - The new InputAxis object to add to the Input manager
 
-        @return bool - Returns true if the axis was successfully added to the manager
+        return bool - Returns true if the axis was successfully added to the manager
 
         Example:
 
@@ -204,9 +204,9 @@ var Input = new function() {
         Input : removeAxis - Remove an InputAxis object from the Input manager
         29/07/2016
 
-        @param[in] pAxis - The InputAxis object to remove from the Input manager
+        param[in] pAxis - The InputAxis object to remove from the Input manager
 
-        @return bool - Returns true if the object was successfully removed
+        return bool - Returns true if the object was successfully removed
 
         Example:
 
@@ -255,9 +255,9 @@ var Input = new function() {
         Input : clearAxis - Completly clears all InputAxis objects with a specified name
         29/07/2016
 
-        @param[in] pName - The name of the axis to clear
+        param[in] pName - The name of the axis to clear
 
-        @return bool - Returns true if the axis was successfully removed
+        return bool - Returns true if the axis was successfully removed
 
         Example:
 
@@ -283,9 +283,9 @@ var Input = new function() {
         Input : getAxis - Gets the value of the specified axis 
         29/07/2016
 
-        @param[in] pName - The name of the axis to retrieve
+        param[in] pName - The name of the axis to retrieve
 
-        @return number - Returns a number between 1 and -1 as the axis value
+        return number - Returns a number between 1 and -1 as the axis value
 
         Example:
 
@@ -306,9 +306,9 @@ var Input = new function() {
         Input : keyDown - Check if the passed in key is currently down
         29/07/2016
 
-        @param[in] pKey - An integral number reflecting the key to check
+        param[in] pKey - An integral number reflecting the key to check
 
-        @return bool - Returns true if the key is down
+        return bool - Returns true if the key is down
 
         Example:
 
@@ -325,9 +325,9 @@ var Input = new function() {
         Input : keyUp - Check if the passed in key is currently up
         29/07/2016
 
-        @param[in] pKey - An integral number reflecting the key to check
+        param[in] pKey - An integral number reflecting the key to check
 
-        @return bool - Returns true if the key is down
+        return bool - Returns true if the key is down
 
         Example:
 
@@ -344,9 +344,9 @@ var Input = new function() {
         Input : keyPressed - Checks to see if the key has been pressed this cycle
         29/07/2016
 
-        @param[in] pKey - An integral number reflecting the key to check
+        param[in] pKey - An integral number reflecting the key to check
 
-        @return bool - Returns true if the key has been pressed
+        return bool - Returns true if the key has been pressed
 
         Example:
 
@@ -363,9 +363,9 @@ var Input = new function() {
         Input : keyReleased - Checks to see if the key has been released this cycle
         29/07/2016
 
-        @param[in] pKey - An integral number reflecting the key to check
+        param[in] pKey - An integral number reflecting the key to check
 
-        @return bool - Returns true if the key has been released
+        return bool - Returns true if the key has been released
 
         Example:
 
@@ -388,9 +388,9 @@ var Input = new function() {
         Input : mouseDown - Checks to see if the mouse button is currently down
         29/07/2016
 
-        @param[in] pBtn - An integral number reflecting the to button to check (1 - 3 inclusive)
+        param[in] pBtn - An integral number reflecting the to button to check (1 - 3 inclusive)
 
-        @return bool - Returns true if the button is down
+        return bool - Returns true if the button is down
 
         Example:
 
@@ -405,9 +405,9 @@ var Input = new function() {
         Input : mouseUp - Checks to see if the mouse button is currently up
         29/07/2016
 
-        @param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
+        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
 
-        @return bool - Returns true if the button is up
+        return bool - Returns true if the button is up
 
         Example:
 
@@ -422,9 +422,9 @@ var Input = new function() {
         Input : mousePressed - Checks to see if the mouse button has been pressed this cycle
         29/07/2016
 
-        @param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
+        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
 
-        @return bool - Returns true if the button has been pressed
+        return bool - Returns true if the button has been pressed
 
         Example:
 
@@ -439,9 +439,9 @@ var Input = new function() {
         Input : mouseReleased - Checks to see if the mouse button has been released this cycle
         29/07/2016
 
-        @param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
+        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
 
-        @return bool - Returns true if the button has been released
+        return bool - Returns true if the button has been released
 
         Example:
 
@@ -462,7 +462,7 @@ var Input = new function() {
         window : keydown - Add a callback for the keydown event to the window
         29/07/2016
 
-        @param[in] pEvt - Information about the event that occurred
+        param[in] pEvt - Information about the event that occurred
     */
     window.addEventListener("keydown", function(pEvt) {
         bufferState[pEvt.keyCode] = true;
@@ -472,7 +472,7 @@ var Input = new function() {
         window : keyup - Add a callback for the keyup event to the window
         29/07/2016
 
-        @param[in] pEvt - Information about the event that occurred
+        param[in] pEvt - Information about the event that occurred
     */
     window.addEventListener("keyup", function(pEvt) {
         bufferState[pEvt.keyCode] = false;
@@ -482,7 +482,7 @@ var Input = new function() {
         window : mousedown - Add a callback for the mousedown event to the window
         29/07/2016
 
-        @param[in] pEvt - Information about the event that occurred
+        param[in] pEvt - Information about the event that occurred
     */
     window.addEventListener("mousedown", function(pEvt) {
         //Add support for IE
@@ -500,7 +500,7 @@ var Input = new function() {
         window : mouseup - Add a callback for the mouseup event to the window
         29/07/2016
 
-        @param[in] pEvt - Information about the event occurred
+        param[in] pEvt - Information about the event occurred
     */
     window.addEventListener("mouseup", function(pEvt) {
         //Add support for IE
@@ -518,7 +518,7 @@ var Input = new function() {
         window : mousemove - Add a callback for the mousemove event to the window
         29/07/2016
 
-        @param[in] pEvt - Information about the event occurred
+        param[in] pEvt - Information about the event occurred
     */
     window.addEventListener("mousemove", function(pEvt) {
         //Set the new position
@@ -553,17 +553,17 @@ var Input = new function() {
     InputAxis : Constructor - Initialise with default values
     29/07/2016
 
-    @param[in] pName - A string defining a name to assign to the axis (WARNING: This must
+    param[in] pName - A string defining a name to assign to the axis (WARNING: This must
                        not change once it has been added to the Input manager)
-    @param[in] pPos - The key that adds a positive value to the axis (Default 0)
-    @param[in] pNeg - The key that adds a negative value to the axis (Default 0)
-    @param[in] pStr - The strength of this InputAxis object (1 takes one second 
+    param[in] pPos - The key that adds a positive value to the axis (Default 0)
+    param[in] pNeg - The key that adds a negative value to the axis (Default 0)
+    param[in] pStr - The strength of this InputAxis object (1 takes one second 
                       to reach full value, 2 half a second, 0.5 two seconds etc.) (Default 1)
-    @param[in] pGrav - The gravity of this InputAxis object (How long it takes to return 
+    param[in] pGrav - The gravity of this InputAxis object (How long it takes to return 
                        to a 0 value) (Default 1)
-    @param[in] pAltPos - An alternative key that can be used to add a positive value
+    param[in] pAltPos - An alternative key that can be used to add a positive value
                          to the axis (Default 0)
-    @param[in] pAltNeg - An alternative key that can be used to add a negative value
+    param[in] pAltNeg - An alternative key that can be used to add a negative value
                          to the axis (Default 0)
 
     Example:

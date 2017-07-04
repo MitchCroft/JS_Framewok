@@ -41,9 +41,9 @@ var TextAlign = { LEFT: 0, CENTER: 1, RIGHT: 2 };
     Graphics : Constructor - Initialise the graphics manager
     30/11/2016
 
-    @param[in] pWidth - The desired width of the canvas
-    @param[in] pHeight - The desired height of the canvas
-    @param[in] pResizeCallback - A bool flag to indicate if the graphics object
+    param[in] pWidth - The desired width of the canvas
+    param[in] pHeight - The desired height of the canvas
+    param[in] pResizeCallback - A bool flag to indicate if the graphics object
                                  should call a user defined callback when the window
                                  resizes (Default true)
 
@@ -128,7 +128,7 @@ ExtendProperties(Graphics, {
         Graphics : draw - Get the rendering context for the current render buffer
         30/11/2016
 
-        @return CanvasRenderingContext2D - Returns the rendering context for the current render buffer
+        return CanvasRenderingContext2D - Returns the rendering context for the current render buffer
     */
     get draw() {
         return this.__Internal__Dont__Modify__.context[this.__Internal__Dont__Modify__.renderBufferIndex];
@@ -138,7 +138,7 @@ ExtendProperties(Graphics, {
         Graphics : canvas - Get the canvas that is currently being rendered to
         30/11/2016
 
-        @return Canvas - Returns a HTML5 canvas object
+        return Canvas - Returns a HTML5 canvas object
     */
     get canvas() {
         return this.__Internal__Dont__Modify__.canvas[this.__Internal__Dont__Modify__.renderBufferIndex];
@@ -148,7 +148,7 @@ ExtendProperties(Graphics, {
         Graphics : transform - Change the current transform being being used to render
         31/07/2016
 
-        @param[in] pTrans - The transform to assign (Null clears current transform)
+        param[in] pTrans - The transform to assign (Null clears current transform)
 
         Example:
 
@@ -174,7 +174,7 @@ ExtendProperties(Graphics, {
         Graphics : size - Get the size of the contained canvas object
         28/08/2016
 
-        @return Vec2 - Returns a Vec2 object holding the size of the canvas
+        return Vec2 - Returns a Vec2 object holding the size of the canvas
 
         Example:
 
@@ -189,7 +189,7 @@ ExtendProperties(Graphics, {
         Graphics : size - Set the size of the contained canvas objects
         30/11/2016
 
-        @param[in] pDim - A Vec2 object containing the new dimensions of the canvas
+        param[in] pDim - A Vec2 object containing the new dimensions of the canvas
 
         Example:
 
@@ -216,7 +216,7 @@ ExtendProperties(Graphics, {
         Graphics : width - Returns the current width of the canvas being used
         31/07/2016
 
-        @return number - Returns the width as a number
+        return number - Returns the width as a number
 
         Example:
 
@@ -231,7 +231,7 @@ ExtendProperties(Graphics, {
         Graphics : width - Sets the width of the current canvas object
         31/07/2016
 
-        @param[in] pWidth - A number representing the new width of the canvas
+        param[in] pWidth - A number representing the new width of the canvas
 
         Example:
 
@@ -251,7 +251,7 @@ ExtendProperties(Graphics, {
         Graphics : height - Returns the current height of the canvas being used
         31/07/2016
 
-        @return number - Returns the height as a number
+        return number - Returns the height as a number
 
         Example:
 
@@ -266,7 +266,7 @@ ExtendProperties(Graphics, {
         Graphics : height - Sets the height of the current canvas object
         31/07/2016
 
-        @param[in] pHeight - A number representing the new height of the canvas
+        param[in] pHeight - A number representing the new height of the canvas
 
         Example:
 
@@ -286,7 +286,7 @@ ExtendProperties(Graphics, {
         Graphics : availableArea - Get the available area on the current window
         30/08/2016
 
-        @return Vec2 - Returns a Vec2 object containing the available window area
+        return Vec2 - Returns a Vec2 object containing the available window area
 
         Example:
 
@@ -301,7 +301,7 @@ ExtendProperties(Graphics, {
         Graphics : availableWidth - Get the available width on the current window
         30/08/2016
 
-        @return number - Returns a number containing the total available width
+        return number - Returns a number containing the total available width
 
         Example:
 
@@ -337,11 +337,11 @@ ExtendProperties(Graphics, {
         Graphics : beginRender - Start the rendering with the passed in properties
         30/11/2016
 
-        @param[in] pTranslateX - The X value to translate the drawing point to (Default 0)
-        @param[in] pTranslateY - The Y value to translate the drawing point to (Default 0)
-        @param[in] pRot - The amount of rotation (Radians) to apply to the rendering process (Default 0)
-        @param[in] pScaleX - The amount that the X dimension should be scaled by (Default 1)
-        @param[in] pScaleY - The amount that the Y dimension should be scaled by (Default 1)
+        param[in] pTranslateX - The X value to translate the drawing point to (Default 0)
+        param[in] pTranslateY - The Y value to translate the drawing point to (Default 0)
+        param[in] pRot - The amount of rotation (Radians) to apply to the rendering process (Default 0)
+        param[in] pScaleX - The amount that the X dimension should be scaled by (Default 1)
+        param[in] pScaleY - The amount that the Y dimension should be scaled by (Default 1)
 
         Example:
 
@@ -373,9 +373,9 @@ ExtendProperties(Graphics, {
         Graphics : pushTransform - Push a pre-made transform matrix onto the stack
         20/05/2017
 
-        @param[in] pTransform - A Mat3 obejct holding the transform values
+        param[in] pTransform - A Mat3 obejct holding the transform values
 
-        @return bool - Returns true if the transform was added to the stack
+        return bool - Returns true if the transform was added to the stack
 
         Example:
 
@@ -439,9 +439,9 @@ ExtendProperties(Graphics, {
                                if it does exist.
         30/11/2016
 
-        @param[in] pFilePath - The filepath of the image to load (Relative to the HTML calling this)
+        param[in] pFilePath - The filepath of the image to load (Relative to the HTML calling this)
 
-        @return Image Element - Returns a reference to an HTML Image element that has been
+        return Image Element - Returns a reference to an HTML Image element that has been
                                 added to the document and assigned the passed in image
 
         Example:
@@ -467,14 +467,14 @@ ExtendProperties(Graphics, {
         Graphics : outlineText - Render text to a specified position with an outline
         17/06/2016
 
-        @param[in] pText - The text to render to the display
-        @param[in] pXPos - The X position to render the text at
-        @param[in] pYPos - The Y position to render the text at
-        @param[in] pMainCol - The color to render the main body of text in (Default White)
-        @param[in] pBorderCol - The color to render the outline of text in (Default Black)
-        @param[in] pAlign - A TextAlign value, used to indicate how the text should be
+        param[in] pText - The text to render to the display
+        param[in] pXPos - The X position to render the text at
+        param[in] pYPos - The Y position to render the text at
+        param[in] pMainCol - The color to render the main body of text in (Default White)
+        param[in] pBorderCol - The color to render the outline of text in (Default Black)
+        param[in] pAlign - A TextAlign value, used to indicate how the text should be
                             aligned (Default TextAlign.LEFT)
-        @param[in] pScale - The scale of the border from the main body of text (Default 1)
+        param[in] pScale - The scale of the border from the main body of text (Default 1)
 
         Example:
 
@@ -531,7 +531,7 @@ ExtendProperties(Graphics, {
         Graphics : setWindowResizeCallback - Set the callback function for the window resize event
         30/11/2016
 
-        @param[in] pCB - A function that takes in the new width and height of the viewable area (Or
+        param[in] pCB - A function that takes in the new width and height of the viewable area (Or
                          null to remove the callback)
 
         Example:
@@ -561,9 +561,9 @@ ExtendProperties(Graphics, {
                                           the Graphics object
         30/11/2016
 
-        @param[in] pCB - A function that takes in the new width and height of the canvas
+        param[in] pCB - A function that takes in the new width and height of the canvas
 
-        @return bool - Returns true if the callback was added to the event list
+        return bool - Returns true if the callback was added to the event list
 
         Example:
 
@@ -594,9 +594,9 @@ ExtendProperties(Graphics, {
         Graphics : removeCanvasResizeEvent - Remove a callback function from the canvas resize events list
         30/11/2016
 
-        @param[in] pCB - The function to remove from the callback list
+        param[in] pCB - The function to remove from the callback list
 
-        @return bool - Returns true if the callback was removed from the list
+        return bool - Returns true if the callback was removed from the list
 
         Example:
 

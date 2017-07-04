@@ -27,7 +27,7 @@
     Mat3 : Constructor - Initialise the matrix as copy of another Mat3 or an identity matrix
     28/07/2016
 
-    @param[in] pMat - The Mat3 object to copy (Default undefined)
+    param[in] pMat - The Mat3 object to copy (Default undefined)
 
     Example:
 
@@ -70,7 +70,7 @@ ExtendProperties(Mat3, {
         Mat3 : clone - Create a copy of the current Mat3 object
         28/07/2016
 
-        @return Mat3 - Returns a new Mat3 object with the values of the current
+        return Mat3 - Returns a new Mat3 object with the values of the current
 
         Example:
 
@@ -85,7 +85,7 @@ ExtendProperties(Mat3, {
         Mat3 : transposed - Returns a copy of the current Mat3 object transposed
         28/07/2016
 
-        @return Mat3 - Returns a Mat3 object containing the current Mat3 object transposed
+        return Mat3 - Returns a Mat3 object containing the current Mat3 object transposed
 
         Example:
 
@@ -113,7 +113,7 @@ ExtendProperties(Mat3, {
                           http://www.mathsisfun.com/algebra/matrix-inverse-minors-cofactors-adjugate.html
         28/07/2016
 
-        @return Mat3 - Returns a Mat3 object containing the current Mat3 object inversed
+        return Mat3 - Returns a Mat3 object containing the current Mat3 object inversed
 
         Example:
 
@@ -190,7 +190,7 @@ ExtendProperties(Mat3, {
         Mat3 : transpose - Transpose the current Mat3 object
         28/07/2016
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -217,7 +217,7 @@ ExtendProperties(Mat3, {
         Mat3 : inverse - Inverse the current Mat3 object
         28/07/2016
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -288,10 +288,10 @@ ExtendProperties(Mat3, {
         Mat3 : translated - Get the copy of the current Mat3 object translated by specified values
         28/07/2016
 
-        @param[in] pX - The value to be translated along the X axis
-        @param[in] pY - The value to be translated along the Y axis
+        param[in] pX - The value to be translated along the X axis
+        param[in] pY - The value to be translated along the Y axis
 
-        @return Mat3 - Returns a Mat3 holding the result of the translation
+        return Mat3 - Returns a Mat3 holding the result of the translation
 
         Example:
         
@@ -314,10 +314,10 @@ ExtendProperties(Mat3, {
         Mat3 : translate - Translate the current Mat3 object by the specified values
         28/07/2016
 
-        @param[in] pX - The value to be translated along the X axis
-        @param[in] pY - The value to be translated along the Y axis
+        param[in] pX - The value to be translated along the X axis
+        param[in] pY - The value to be translated along the Y axis
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
         
@@ -337,9 +337,9 @@ ExtendProperties(Mat3, {
         Mat3 : rotated - Get the copy of the current Mat3 object rotated by the specified value
         28/07/2016
 
-        @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
+        param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
 
-        @return Mat3 - Returns a Mat3 holding the result of the rotation
+        return Mat3 - Returns a Mat3 holding the result of the rotation
 
         Example:
 
@@ -368,9 +368,9 @@ ExtendProperties(Mat3, {
         Mat3 : rotate - Rotate the current Mat3 object by the specified value
         28/07/2016
 
-        @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
+        param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -399,10 +399,10 @@ ExtendProperties(Mat3, {
         Mat3 : scaled - Get the copy of the current Mat3 object scaled by the specified values
         28/07/2016
 
-        @param[in] pX - The value with which to scale the X axis of the Mat3
-        @param[in] pY - The value with which to scale the Y axis of the Mat3
+        param[in] pX - The value with which to scale the X axis of the Mat3
+        param[in] pY - The value with which to scale the Y axis of the Mat3
 
-        @return Mat3 - Returns a Mat3 holding the result of the scaling
+        return Mat3 - Returns a Mat3 holding the result of the scaling
 
         Example:
 
@@ -425,10 +425,10 @@ ExtendProperties(Mat3, {
         Mat3 : scale - Scale the current Mat3 object by the specified values
         28/07/2016
 
-        @param[in] pX - The value with which to scale the X axis of the Mat3
-        @param[in] pY - The value with which to scale the Y axis of the Mat3
+        param[in] pX - The value with which to scale the X axis of the Mat3
+        param[in] pY - The value with which to scale the Y axis of the Mat3
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -457,9 +457,9 @@ ExtendProperties(Mat3, {
         Mat3 : set - Set the current mat3 object to the values of another
         28/07/2017
 
-        @param[in] pMat - The Mat3 object to copy
+        param[in] pMat - The Mat3 object to copy
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -488,9 +488,9 @@ ExtendProperties(Mat3, {
         Mat3 : multi - Multiply the current Mat3 object by another
         28/07/2016
 
-        @param[in] pMat - The Mat3 object to multiply the current by
+        param[in] pMat - The Mat3 object to multiply the current by
 
-        @return Mat3 - Returns a Mat3 object holding the result of the multiplication
+        return Mat3 - Returns a Mat3 object holding the result of the multiplication
 
         Example:
 
@@ -522,9 +522,9 @@ ExtendProperties(Mat3, {
         Mat3 : multiSet - Set the current Mat3 object to the multiplication between it and the passed in Mat3
         28/07/2016
 
-        @param[in] pMat - The Mat3 object to multiply the current by
+        param[in] pMat - The Mat3 object to multiply the current by
 
-        @return this - Returns itself once the function has ended
+        return this - Returns itself once the function has ended
 
         Example:
 
@@ -556,9 +556,9 @@ ExtendProperties(Mat3, {
         Mat3 : multiVec - Multiply the current Mat3 object by a Vec2 object
         09/08/2016
 
-        @param[in] pVec - The Vec2 object to multiply the current by
+        param[in] pVec - The Vec2 object to multiply the current by
 
-        @return Vec2 - Returns a Vec2 object holding the result of the multiplication
+        return Vec2 - Returns a Vec2 object holding the result of the multiplication
 
         Example:
 
@@ -583,10 +583,10 @@ ExtendProperties(Mat3, {
     createTranslationMat - Create a translation matrix from the passed in values
     28/07/2016
 
-    @param[in] pX - The X translation value to set in the matrix
-    @param[in] pY - The Y translation value to set in the matrix
+    param[in] pX - The X translation value to set in the matrix
+    param[in] pY - The Y translation value to set in the matrix
 
-    @return Mat3 - Returns a Mat3 with the translation values passed in
+    return Mat3 - Returns a Mat3 with the translation values passed in
 
     Example:
 
@@ -609,9 +609,9 @@ function createTranslationMat(pX, pY) {
     createRotationMat - Create a rotation matrix from the passed in value
     28/07/2016
 
-    @param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
+    param[in] pRot - The amount with which to rotate the Mat3 object (Number in radians)
 
-    @return Mat3 - Returns a Mat3 object with the rotation values
+    return Mat3 - Returns a Mat3 object with the rotation values
 
     Example:
 
@@ -640,10 +640,10 @@ function createRotationMat(pRot) {
     createScaleMat - Create a scale matrix from the passed in values
     28/07/2016
 
-    @param[in] pX - The value with which to scale the X axis of the Mat3
-    @param[in] pY - The value with which to scale the Y axis of the Mat3
+    param[in] pX - The value with which to scale the X axis of the Mat3
+    param[in] pY - The value with which to scale the Y axis of the Mat3
 
-    @return Mat3 - Returns a Mat3 object with the scale values
+    return Mat3 - Returns a Mat3 object with the scale values
 
     Example:
 
@@ -666,13 +666,13 @@ function createScaleMat(pX, pY) {
     createTransform - Create a transform from the passed in values
     28/07/2016
 
-    @param[in] pTranslateX - The amount the transform should be translated on the X axis (Default 0)
-    @param[in] pTranslateY - The amount the transform should be translated on the Y axis (Default 0)
-    @param[in] pRot - The amount the transform should be rotated (Radians, Default 0)
-    @param[in] pScaleX - The amount the transform should be scaled on the X axis (Default 1)
-    @param[in] pScaleY - The amount the transform should be scaled on the Y axis (Default 1)
+    param[in] pTranslateX - The amount the transform should be translated on the X axis (Default 0)
+    param[in] pTranslateY - The amount the transform should be translated on the Y axis (Default 0)
+    param[in] pRot - The amount the transform should be rotated (Radians, Default 0)
+    param[in] pScaleX - The amount the transform should be scaled on the X axis (Default 1)
+    param[in] pScaleY - The amount the transform should be scaled on the Y axis (Default 1)
 
-    @return Mat3 - REturns a Mat3 object with the transform values
+    return Mat3 - REturns a Mat3 object with the transform values
 
     Example:
 
