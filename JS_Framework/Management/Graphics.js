@@ -98,9 +98,6 @@ function Graphics(pWidth, pHeight, pResizeCallback) {
 
         //Get the 2D context from the canvas
         this.__Internal__Dont__Modify__.context[i] = this.__Internal__Dont__Modify__.canvas[i].getContext("2d");
-
-        //Hide the current render buffer
-        //this.__Internal__Dont__Modify__.canvas[i].style.visibility = (i === this.__Internal__Dont__Modify__.renderBufferIndex ? "hidden" : "visible");
     }
 
     //Setup the window resize callback

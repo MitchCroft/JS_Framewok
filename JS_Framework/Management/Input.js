@@ -5,46 +5,267 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
- *      Name: Input
- *      Author: Mitchell Croft
- *      Date: 29/07/2016
+ *		Name: Input
+ *		Author: Mitchell Croft
+ *		Date: 06/07/2017
  *
- *      Requires:
- *      Vec2.js
+ *		Requires:
+ *		Vec2.js, ExtendProperties.js
  *
- *      Version: 2.0
- *      Added axis values. Cleaned up comments and code layout
+ *		Version: 3.0
+ *		Cleaned up object definition and useage to match
+ *		other elements in the framework
  *
- *      Purpose:
- *      Manage changes in input states and provide an interface
- *      for using that information within a game project. Object
- *      is created on file load, to use call the update function
- *      once per game loop (i.e. cycle)
- **/
+ *		Purpose:
+ *		Manage changes in input states and provide an interface
+ *		for using that information within a game project. To use, 
+ *		call update function once per cycle (i.e. game loop)
+**/
 
-var Input = new function() {
-    //Track key states per cycle
-    var preKeyState = [];
-    preKeyState.length = 256;
-    preKeyState.fill(false);
-    var curKeyState = [];
-    curKeyState.length = 256;
-    curKeyState.fill(false);
+/*
+	Input : Constructor - Initialise with default values
+	06/07/2017
 
-    //Store input changes inbetween cycles
-    var bufferState = [];
+	param[in] pCanvas - The canvas object to use for correcting mouse positions
+*/
+function Input(pCanvas) {
+	//Ensure that the canvas is valid
+	switch (typeof pCanvas) {
+		case "object":
+		if (pCanvas.nodeName === "CANVAS") break;
+		default: pCanvas = null;
+	}
 
-    //Store a map of the different axis values
-    var axisValues = [];
+	/*  WARNING:
+        Don't modify this internal object from the outside of the Input object.
+        Instead use Input object properties and functions to modify these values
+        as this allows for the internal information to update itself and keep it
+        correct.
+    */
+    this.__Internal__Dont__Modify__ = {
+    	//Track changes in key states per cycle
+    	prevKeyStates: [],
+    	curKeyStates: [],
 
-    //Store an array of the different InputAxis objects
-    var axisObjects = [];
+    	//Store changes of input inbetween cycles
+    	bufferStates: [],
 
-    //Store the mouse position
-    this.mousePos = new Vec2();
+    	//Store a map of the different Virtual Axis objects
+    	axisObjects: {},
 
-    //Store a reference to the canvas in use for mouse coord correction
-    var screenCanvas = null;
+    	//Store a map of the different Virtual Axis values
+    	axisValues: {},
+
+    	//Store the position of the mouse cursor
+    	mousePos: new Vec2(),
+
+    	//Store a reference to the canvas in use for mouse coordinate correction
+    	screenCanvas: pCanvas,
+    };
+
+    //Setup the event callbacks
+    window.addEventListener("keydown", this.onKeyDown.bind(this), false);
+    window.addEventListener("keyup", this.onKeyUp.bind(this), false);
+    window.addEventListener("mousedown", this.onMouseDown.bind(this), false);
+    window.addEventListener("mouseup", this.onMouseUp.bind(this), false);
+    window.addEventListener("mousemove", this.onMouseMove.bind(this), false);
+};
+
+ExtendProperties(Input, {
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////                                                                                                            ////
+	/////                                               Property Definitions                                         ////
+	/////                                                                                                            ////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/*
+		Input : mousePos - Get the current position of the mouse on the window
+		06/07/2017
+
+		return Vec2 - Returns a Vec2 object holding the position data
+	*/
+	get mousePos() {
+		//Create a vector object to hold the values
+		let pos = new Vec2(this.__Internal__Dont__Modify__.mousePos);
+
+		//Correct position based on canvas
+		if (this.__Internal__Dont__Modify__.screenCanvas !== null) {
+			pos.x -= this.__Internal__Dont__Modify__.screenCanvas.offsetLeft;
+			pos.y -= this.__Internal__Dont__Modify__.screenCanvas.offsetTop;
+		}
+
+		//Return the position
+		return pos;
+	},
+
+	/*
+		Input : canvas - Set the canvas that is being used for input correction
+		06/07/2017
+
+		param[in] pCnv - A CanvasRenderingContext2D object to be used for input correction
+	*/
+	set canvas(pCnv) {
+		this.__Internal__Dont__Modify__.screenCanvas = Validate.instance(pCnv, CanvasRenderingContext2D, null, true);
+	},
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                                 Input Functions                                            ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+		Input : inputDown - Check if the passed in Input value is currently down
+		06/07/2017
+
+		param[in] pVal - An integral number reflecting the input to check as described in
+						 the Keys and Buttons objects
+
+		return bool - Returns true if the input is down
+    */
+    inputDown: function(pVal) {
+    	return this.__Internal__Dont__Modify__.curKeyStates[pVal];
+    },
+
+    /*
+		Input : inputUp - Check if the passed in Input value is currently up
+		06/07/2017
+
+		param[in] pVal - An integral number reflecting the input to check as described in
+						 the Keys and Buttons objects
+
+		return bool - Returns true if the input is up
+    */
+    inputUp: function(pVal) {
+    	return !this.__Internal__Dont__Modify__.curKeyStates[pVal];
+    },
+
+    /*
+		Input : inputPressed - Check to see if the Input value has been pressed this cycle
+		06/07/2017
+
+		param[in] pVal - An integral number reflecting the input to check as described in
+						 the Keys and Buttons objects
+
+		return bool - Returns true if the input was pressed this cycle
+    */
+    inputPressed: function(pVal) {
+    	return (this.__Internal__Dont__Modify__.curKeyStates[pVal] && !this.__Internal__Dont__Modify__.prevKeyStates[pVal]);
+    },
+
+    /*
+		Input : inputReleased - Check to see if the Input value was released this cycle
+		06/07/2017
+
+		param[in] pVal - An integral number reflecting the input to check as described in
+						 the Keys and Buttons objects
+
+		return bool - Returns true if the input was released this cycle
+    */
+    inputReleased: function(pVal) {
+    	return (!this.__Internal__Dont__Modify__.curKeyStates[pVal] && this.__Internal__Dont__Modify__.prevKeyStates[pVal]);
+    },
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////                                                                                                            ////
+    /////                                                 Axis Functions                                             ////
+    /////                                                                                                            ////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+		Input : addAxis - Add a new INput Axis object to be used by the Input Manager
+		06/07/2017
+
+		param[in] pAxis - The new Input Axis object to add to the Input Manager
+
+		return bool - Returns true if the Axis was successfully added to the manager
+    */
+    addAxis: function(pAxis) {
+    	//Verify input value
+    	pAxis = Validate.instance(pAxis, InputAxis, null, true);
+
+    	//Check if the axis already exists
+    	if (!(pAxis.name in this.__Internal__Dont__Modify__.axisObjects)) {
+    		//Create the axis value
+    		this.__Internal__Dont__Modify__.axisValues[pAxis.name] = 0;
+
+    		//Create the array for Input Axis objects with this name
+    		this.__Internal__Dont__Modify__.axisObjects[pAxis.name] = [];
+    	}
+
+    	//Loop through all existing Virtual Axis objects for copy
+    	for (var i = this.__Internal__Dont__Modify__.axisObjects[pAxis.name].length - 1; i >= 0; i--) {
+    		//Check if Virtual Axis object already exists
+    		if (this.__Internal__Dont__Modify__.axisObjects[pAxis.name][i] === pAxis) 
+    			return false;
+    	}
+
+    	//Add the Axis object to the map
+    	this.__Internal__Dont__Modify__.axisObjects.push(pAxis);
+
+    	//Return successful
+    	return true;
+    },
+
+    /*
+		Input : removeAxis - Remove a Input Axis object from the Input Manager
+		06/07/2017
+
+		param[in] pAxis - The Input Axis object to remove
+
+		return bool - Returns true if the object was successfully removed
+    */
+    removeAxis: function(pAxis) {
+    	//Verify input value
+    	pAxis = Validate.instance(pAxis, InputAxis, null, true);
+
+    	//Check if the name exists in the map
+    	if (!(pAxis.name in this.__Internal__Dont__Modify__.axisObjects)) return false;
+
+    	//Look through to find matching Input Axis
+    	for (var i = this.__Internal__Dont__Modify__.axisObjects[pAxis.name].length - 1; i >= 0; i--) {
+    		if (this.__Internal__Dont__Modify__.axisObjects[pAxis.name][i] === pAxis) {
+    			//Remove the object from the list
+    			this.__Internal__Dont__Modify__.axisObjects[pAxis.name].splice(i, 1);
+
+    			//Check to see if there are other Axis objects
+    			if (!this.__Internal__Dont__Modify__.axisObjects[pAxis.name].length) {
+    				//Remove the Axis values and objects arrays
+    				delete this.__Internal__Dont__Modify__.axisValues[pAxis.name];
+    				delete this.__Internal__Dont__Modify__.axisObjects[pAxis.name];
+    			}
+
+    			//Return success
+    			return true;
+    		}
+    	}
+
+    	//Default return failure
+    	return false;
+    },
+
+    /*
+		Input : clearAxis - Completly remove all Input Axis objects with a specific name
+		06/07/2017
+
+		param[in] pName - A string containing the name of the axis to clear
+
+		return bool - Returns true if the axis was cleared
+    */
+    clearAxis: function(pName) {
+		//Clean parameter
+		pName = Validate.type(pName, "string", "", true);
+
+    	//Check if the name exists in the map
+    	if (!(pName in this.__Internal__Dont__Modify__.axisObjects)) return false;
+
+    	//Remove the Axis values and objects arrays
+    	delete this.__Internal__Dont__Modify__.axisValues[pName];
+    	delete this.__Internal__Dont__Modify__.axisObjects[pName];
+
+    	//Return successful
+    	return true;
+    },
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////                                                                                                            ////
@@ -53,485 +274,164 @@ var Input = new function() {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-        Input : update - Update the input states based on the changes since the last cycle
-        29/07/2016
-        
-        Requires:
-        This function must be called oonce (and only once) per cycle. Call this function at the start of 
-        your game loop.
+		Input : update - Update the Input states based on the changes since the last call
+		06/07/2017
 
-        param[in] pDelta - The delta time for the cycle
+		Requires:
+		This functionality requires the function to be called once per cycle. Call this at the start of each
 
-        Example:
-
-        function gameLoop() {
-            //Update input manager
-            Input.update(deltaTime);
-        }
+		param[in] pDelta - The delta time for the cycle
     */
-    this.update = function(pDelta) {
-        //Loop through the buffer state and copy values over
-        for (var i = bufferState.length - 1; i >= 0; i--) {
-            //Copy the current state to the previous
-            preKeyState[i] = curKeyState[i];
+    update: function(pDelta) {
+    	//Loop thorugh the key states and copy values over
+    	for (var key in this.__Internal__Dont__Modify__.bufferStates) {
+    		//Ensure own property
+    		if (!this.__Internal__Dont__Modify__.bufferStates.hasOwnProperty(key)) continue;
 
-            //Copy the current state from the buffer
-            curKeyState[i] = bufferState[i];
-        }
+    		//Copy the current state to the previous register
+    		this.__Internal__Dont__Modify__.prevKeyStates[key] = this.__Internal__Dont__Modify__.curKeyStates[key];
 
-        //Update the axis values
-        for (var axisName in axisObjects) {
-            //Test this is actaully a name in the map
-            if (!axisObjects.hasOwnProperty(axisName)) continue;
+    		//Copy the current state from the buffer
+    		this.__Internal__Dont__Modify__.curKeyStates[key] = this.__Internal__Dont__Modify__.bufferStates[key];
+    	}
 
-            //Flag if input has been included
-            var strengthVal = 0;
+    	//Update the axis values
+    	for (var axisName in this.__Internal__Dont__Modify__.axisObjects) {
+    		//Ensure own property
+    		if (!this.__Internal__Dont__Modify__.axisObjects.hasOwnProperty(axisName)) continue;
 
-            //Store the average gravity of all InputAxis objects
-            var gravAvg = 0;
+    		//Track the strongest input for the axis
+    		let strengthVal = 0;
 
-            //Loop through the axis objects
-            for (var i = axisObjects[axisName].length - 1; i >= 0; i--) {
-                //Add the gravity to the average
-                gravAvg += axisObjects[axisName][i].gravity;
+    		//Store the average gravity of all InputAxis objects
+    		let gravAvg = 0;
 
-                //Get a total of the strength for this object
-                var objVal = 0;
+    		//Loop through the axis objects
+    		for (var i = this.__Internal__Dont__Modify__.axisObjects[axisName].length - 1; i >= 0; i--) {
+    			//Store a reference to the axis object
+    			let obj = this.__Internal__Dont__Modify__.axisObjects[axisName][i];
 
-                //Check if positive key is down
-                if (curKeyState[axisObjects[axisName][i].positiveKey] ||
-                    curKeyState[axisObjects[axisName][i].altPositiveKey])
-                    objVal += axisObjects[axisName][i].strength * pDelta;
+    			//Add the gravity to the running sum
+    			gravAvg += obj.gravity;
 
-                //Check if negative key is down
-                if (curKeyState[axisObjects[axisName][i].negativeKey] ||
-                    curKeyState[axisObjects[axisName][i].altNegativeKey])
-                    objVal -= axisObjects[axisName][i].strength * pDelta;
+    			//Track the total strength being applied
+    			let objStrength = 0;
 
-                //Check if the strength is stronger then current
-                if (Math.abs(objVal) > Math.abs(strengthVal))
-                    strengthVal = objVal;
-            }
+    			//Check for the positive keys
+    			if (this.__Internal__Dont__Modify__.curKeyStates[obj.positiveKey] ||
+    				this.__Internal__Dont__Modify__.curKeyStates[obj.altPositiveKey])
+    				objStrength += obj.strength;
 
-            //Test if there is any strength to apply
-            if (strengthVal) {
-                //Add the strength value
-                axisValues[axisName] += strengthVal;
+    			//Check for the negative keys
+    			if (this.__Internal__Dont__Modify__.curKeyStates[obj.negativeKey] ||
+    				this.__Internal__Dont__Modify__.curKeyStates[obj.altNegativeKey])
+    				objStrength -= obj.strength;
 
-                //Clamp the axis value from -1 to 1
-                axisValues[axisName] = (axisValues[axisName] > 1 ? 1 : axisValues[axisName] < -1 ? -1 : axisValues[axisName]);
-            }
+    			//Check if this axis is stronger then the previous
+    			if (Math.abs(objStrength) > Math.abs(strengthVal))
+    				strengthVal = objStrength;
+    		}
 
-            //If no strength apply gravity
-            else {
-                //Get the direction
-                var dir = Math.sign(axisValues[axisName]) * -1;
+    		//Test if there is any strength to apply
+    		if (strengthVal) {
+    			//Add the strength value
+    			this.__Internal__Dont__Modify__.axisValues[axisName] += strengthVal * pDelta;
 
-                //Average out the gravity value
-                gravAvg /= axisObjects[axisName].length;
+    			//Clamp the axis values from -1 to 1
+    			this.__Internal__Dont__Modify__.axisValues[axisName] = Math.clamp(this.__Internal__Dont__Modify__.axisValues[axisName], -1, 1);
+    		}
 
-                //Get the gravity value applied to the current value
-                var appliedVal = axisValues[axisName] + gravAvg * pDelta * dir;
+    		//Otherwise apply gravity
+    		else {
+    			//Get the direction to apply gravity
+    			let dir = Math.sign(this.__Internal__Dont__Modify__.axisValues[axisName]) * -1;
 
-                //Assign the axis values
-                axisValues[axisName] = (Math.sign(appliedVal) === dir ? 0 : appliedVal);
-            }
-        }
-    };
+    			//Average out the gravity value
+    			gravAvg /= this.__Internal__Dont__Modify__.axisObjects[axisName].length;
 
-    /*
-        Input : setCanvas - Sets the canvas object that will be used to offset the mouse position
-        29/07/2016
+    			//Get the gravity value applied to the current value
+    			let appliedVal = this.__Internal__Dont__Modify__.axisValues[axisName] + gravAvg * dir * pDelta;
 
-        param[in] pCnv - A reference to the canvas object present on HTML document
-
-        Example:
-
-        //Set the input managers canvas
-        Input.setCanvas(canvas);
-
-        OR
-
-        //Remove the assigned canvas object
-        Input.setCanvas(null);
-    */
-    this.setCanvas = function(pCnv) {
-        screenCanvas = pCnv;
-    };
+    			//Assign the axis value
+    			this.__Internal__Dont__Modify__.axisValues[axisName] = (Math.sign(appliedVal) === dir ? 0 : appliedVal);
+    		}
+    	}
+    },
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////                                                                                                            ////
-    /////                                                 Axis Functions                                             ////
+    /////                                              Callback Functions                                            ////
     /////                                                                                                            ////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /*
-        Input : addAxis - Add a new InputAxis object to be used by the Input manager
-        29/07/2016
+		Input : onKeyDown - Event callback for keyboard presses while on web page
+		06/07/2017
 
-        param[in] pAxis - The new InputAxis object to add to the Input manager
-
-        return bool - Returns true if the axis was successfully added to the manager
-
-        Example:
-
-        //Setup Input axis'
-        if (Input.addAxis(horizontalAxis)) {
-            //TODO: Continue loading game values
-        }
+		param[in] pEvt - Information about the event that occured
     */
-    this.addAxis = function(pAxis) {
-        //Check pAxis is an InputAxis object
-        if (!(pAxis instanceof InputAxis)) return false;
-
-        //Check if axis already exists
-        if (!(pAxis.name in axisValues)) {
-            //Create the axis value
-            axisValues[pAxis.name] = 0;
-
-            //Create the array for InputAxis objects with this name
-            axisObjects[pAxis.name] = [];
-        }
-
-        //Add the the axis object to the map
-        axisObjects[pAxis.name].push(pAxis);
-
-        //Return success
-        return true;
-    };
+    onKeyDown: function(pEvt) {
+    	this.__Internal__Dont__Modify__.bufferStates[pEvt.keyCode] = true;
+    },
 
     /*
-        Input : removeAxis - Remove an InputAxis object from the Input manager
-        29/07/2016
+		Input : onKeyUp - Event callback for keyboard releases while on web page
+		06/07/2017
 
-        param[in] pAxis - The InputAxis object to remove from the Input manager
-
-        return bool - Returns true if the object was successfully removed
-
-        Example:
-
-        if (Input.removeAxis(horizontalAxis)) {
-            //TODO: Prompt user for new input
-        }
+		param[in] pEvt - Information about the event that occured
     */
-    this.removeAxis = function(pAxis) {
-        //Check pAxis is an InputAxis object
-        if (!(pAxis instanceof InputAxis)) return false;
-
-        //Check if axis value exists
-        if (!(pAxis.name in axisValues)) return false;
-
-        //Track if the object was found
-        var found = false;
-
-        //Loop through the InputAxis objects to look for match
-        for (var i = axisObjects[pAxis.name].length - 1; i >= 0; i--) {
-            if (axisObjects[pAxis.name][i] === pAxis) {
-                //Remove the object from the array
-                axisObjects[pAxis.name].splice(i, 1);
-
-                //Set the found flag
-                found = true;
-
-                //Exit the loop
-                break;
-            }
-        }
-
-        //If the value was found check if axis values can be deleted
-        if (found && axisObjects[pAxis.name].length === 0) {
-            //Delete the axis value
-            delete axisValues[pAxis.name];
-
-            //Delete the axis the axis objects array
-            delete axisObjects[pAxis.name];
-        }
-
-        //Return could not find the item
-        return found;
-    };
+    onKeyUp: function(pEvt) {
+    	this.__Internal__Dont__Modify__.bufferStates[pEvt.keyCode] = false;
+    },
 
     /*
-        Input : clearAxis - Completly clears all InputAxis objects with a specified name
-        29/07/2016
+		Input : onMouseDown - Event callback for mouse presses while on web page
+		06/07/2017
 
-        param[in] pName - The name of the axis to clear
-
-        return bool - Returns true if the axis was successfully removed
-
-        Example:
-
-        if (Input.clearAxis("horizontal")) {
-            //TODO: Prompt user for new input
-        }
+		param[in] pEvt - Information about the event that occured
     */
-    this.clearAxis = function(pName) {
-        //Check if the axis exists
-        if (!(pName in axisValues)) return false;
+    onMouseDown: function(pEvt) {
+    	//Support IE (For some reason)
+    	if (!pEvt.which && pEvt.button) {
+    		if (pEvt.button & Buttons.LEFT_CLICK) pEvt.which = Buttons.LEFT_CLICK;
+    		else if (pEvt.button & Buttons.MIDDLE_CLICK) pEvt.which = Buttons.MIDDLE_CLICK;
+    		else if (pEvt.button & Buttons.RIGHT_CLICK) pEvt.which = Buttons.RIGHT_CLICK;
+    	}
 
-        //Delete the axis value
-        delete axisValues[pName];
-
-        //Delete the axis objects
-        delete axisObjects[pName];
-
-        //Return successfull
-        return true;
-    };
+    	//Set the mouse down value
+    	this.__Internal__Dont__Modify__.bufferStates[pEvt.which] = true;
+    },
 
     /*
-        Input : getAxis - Gets the value of the specified axis 
-        29/07/2016
+		Input : onMouseUp - Event callback for mouse releases while on web page
+		06/07/2017
 
-        param[in] pName - The name of the axis to retrieve
-
-        return number - Returns a number between 1 and -1 as the axis value
-
-        Example:
-
-        //Add player movement
-        playerPosition += PLAYER_MOVE_SPEED * Input.getAxis("move");
+		param[in] pEvt - Information about the event that occured
     */
-    this.getAxis = function(pName) {
-        return axisValues[pName];
-    };
+    onMouseUp: function(pEvt) {
+    	//Support IE (For some reason)
+    	if (!pEvt.which && pEvt.button) {
+    		if (pEvt.button & Buttons.LEFT_CLICK) pEvt.which = Buttons.LEFT_CLICK;
+    		else if (pEvt.button & Buttons.MIDDLE_CLICK) pEvt.which = Buttons.MIDDLE_CLICK;
+    		else if (pEvt.button & Buttons.RIGHT_CLICK) pEvt.which = Buttons.RIGHT_CLICK;
+    	}
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////                                                                                                            ////
-    /////                                               Keyboard Functions                                           ////
-    /////                                                                                                            ////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    	//Set the mouse up value
+    	this.__Internal__Dont__Modify__.bufferStates[pEvt.which] = false;
+    },
 
     /*
-        Input : keyDown - Check if the passed in key is currently down
-        29/07/2016
+		Input : onMouseMove - Event callback for mouse movement while on web page
+		06/07/2017
 
-        param[in] pKey - An integral number reflecting the key to check
-
-        return bool - Returns true if the key is down
-
-        Example:
-
-        //Check for forward movement
-        if (Input.keyDown(Keys.UP)) {
-            //TODO: Move the player forward
-        }
+		param[in] pEvt - Information about the event that occured
     */
-    this.keyDown = function(pKey) {
-        return curKeyState[pKey];
-    };
-
-    /*
-        Input : keyUp - Check if the passed in key is currently up
-        29/07/2016
-
-        param[in] pKey - An integral number reflecting the key to check
-
-        return bool - Returns true if the key is down
-
-        Example:
-
-        //Check if the player is not sneaking
-        if (Input.keyUp(Keys.SHIFT)) {
-            //TODO: Make lots of noise
-        }
-    */
-    this.keyUp = function(pKey) {
-        return !curKeyState[pKey];
-    };
-
-    /*
-        Input : keyPressed - Checks to see if the key has been pressed this cycle
-        29/07/2016
-
-        param[in] pKey - An integral number reflecting the key to check
-
-        return bool - Returns true if the key has been pressed
-
-        Example:
-
-        //Fire the players gun
-        if (Input.keyPressed(Keys.SPACE)) {
-            //TODO: Fire a bullet
-        }
-    */
-    this.keyPressed = function(pKey) {
-        return (curKeyState[pKey] && !preKeyState[pKey]);
-    };
-
-    /*
-        Input : keyReleased - Checks to see if the key has been released this cycle
-        29/07/2016
-
-        param[in] pKey - An integral number reflecting the key to check
-
-        return bool - Returns true if the key has been released
-
-        Example:
-
-        //Throw cooked grenade
-        if (Input.keyReleased(Keys.TAB)) {
-            //TODO: Throw grenade
-        }
-    */
-    this.keyReleased = function(pKey) {
-        return (!curKeyState[pKey] && preKeyState[pKey]);
-    };
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////                                                                                                            ////
-    /////                                               Mouse Functions                                              ////
-    /////                                                                                                            ////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*
-        Input : mouseDown - Checks to see if the mouse button is currently down
-        29/07/2016
-
-        param[in] pBtn - An integral number reflecting the to button to check (1 - 3 inclusive)
-
-        return bool - Returns true if the button is down
-
-        Example:
-
-        //Check if attack is charging
-        if (Input.mouseDown(Buttons.LEFT_CLICK)) {
-            //TODO: Charge attack
-        }
-    */
-    this.mouseDown = this.keyDown;
-
-    /*
-        Input : mouseUp - Checks to see if the mouse button is currently up
-        29/07/2016
-
-        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
-
-        return bool - Returns true if the button is up
-
-        Example:
-
-        //Check if player is aiming
-        if (Input.mouseUp(Buttons.RIGHT_CLICK)) {
-            //TODO: Add movement code
-        }
-    */
-    this.mouseUp = this.keyUp;
-
-    /*
-        Input : mousePressed - Checks to see if the mouse button has been pressed this cycle
-        29/07/2016
-
-        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
-
-        return bool - Returns true if the button has been pressed
-
-        Example:
-
-        //Choose player spawn point
-        if (Input.mousePressed(Buttons.MIDDLE_CLICK)) {
-            //TODO: Place the spawn point
-        }
-    */
-    this.mousePressed = this.keyPressed;
-
-    /*
-        Input : mouseReleased - Checks to see if the mouse button has been released this cycle
-        29/07/2016
-
-        param[in] pBtn - An integral number reflecting the button to check (1 - 3 inclusive)
-
-        return bool - Returns true if the button has been released
-
-        Example:
-
-        //Release cooking grenade when player release button
-        if (Input.mouseReleased(Buttons.RIGHT_CLICK)) {
-            //TODO: Throw grenade
-        }
-    */
-    this.mouseReleased = this.keyReleased;
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////                                                                                                            ////
-    /////                                            Setup Event Listeners                                           ////
-    /////                                                                                                            ////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*
-        window : keydown - Add a callback for the keydown event to the window
-        29/07/2016
-
-        param[in] pEvt - Information about the event that occurred
-    */
-    window.addEventListener("keydown", function(pEvt) {
-        bufferState[pEvt.keyCode] = true;
-    }, false);
-
-    /*
-        window : keyup - Add a callback for the keyup event to the window
-        29/07/2016
-
-        param[in] pEvt - Information about the event that occurred
-    */
-    window.addEventListener("keyup", function(pEvt) {
-        bufferState[pEvt.keyCode] = false;
-    }, false);
-
-    /*
-        window : mousedown - Add a callback for the mousedown event to the window
-        29/07/2016
-
-        param[in] pEvt - Information about the event that occurred
-    */
-    window.addEventListener("mousedown", function(pEvt) {
-        //Add support for IE
-        if (!pEvt.which && pEvt.button) {
-            if (pEvt.button & 1) pEvt.which = 1;
-            else if (pEvt.button & 4) pEvt.which = 2;
-            else if (pEvt.button & 2) pEvt.which = 3;
-        }
-
-        //Set the mouse down value
-        bufferState[pEvt.which] = true;
-    }, false);
-
-    /*
-        window : mouseup - Add a callback for the mouseup event to the window
-        29/07/2016
-
-        param[in] pEvt - Information about the event occurred
-    */
-    window.addEventListener("mouseup", function(pEvt) {
-        //Add support for IE
-        if (!pEvt.which && pEvt.button) {
-            if (pEvt.button & 1) pEvt.which = 1;
-            else if (pEvt.button & 4) pEvt.which = 2;
-            else if (pEvt.button & 2) pEvt.which = 3;
-        }
-
-        //Set the mouse up value
-        bufferState[pEvt.which] = false;
-    }, false);
-
-    /*
-        window : mousemove - Add a callback for the mousemove event to the window
-        29/07/2016
-
-        param[in] pEvt - Information about the event occurred
-    */
-    window.addEventListener("mousemove", function(pEvt) {
-        //Set the new position
-        Input.mousePos.x = pEvt.pageX;
-        Input.mousePos.y = pEvt.pageY;
-
-        //Check if a canvas object has been set
-        if (screenCanvas !== null) {
-            Input.mousePos.x -= screenCanvas.offsetLeft;
-            Input.mousePos.y -= screenCanvas.offsetTop;
-        }
-    }, false);
-};
+    onMouseMove: function(pEvt) {
+    	//Set the position
+    	this.__Internal__Dont__Modify__.mousePos.x = pEvt.pageX;
+    	this.__Internal__Dont__Modify__.mousePos.y = pEvt.pageY;
+    },
+});
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -542,7 +442,13 @@ var Input = new function() {
 /*
  *      Name: InputAxis
  *      Author: Mitchell Croft
- *      Date: 29/07/2016
+ *      Date: 6/07/2017
+ *
+ *		Requires:
+ *		ExtendProperties.js
+ *
+ *		Version: 2.0
+ *		Added property accessors
  *
  *      Purpose:
  *      Allow for scaleable input return based on a combination
@@ -551,44 +457,178 @@ var Input = new function() {
 
 /*
     InputAxis : Constructor - Initialise with default values
-    29/07/2016
+    06/07/2017
 
-    param[in] pName - A string defining a name to assign to the axis (WARNING: This must
-                       not change once it has been added to the Input manager)
-    param[in] pPos - The key that adds a positive value to the axis (Default 0)
-    param[in] pNeg - The key that adds a negative value to the axis (Default 0)
-    param[in] pStr - The strength of this InputAxis object (1 takes one second 
-                      to reach full value, 2 half a second, 0.5 two seconds etc.) (Default 1)
-    param[in] pGrav - The gravity of this InputAxis object (How long it takes to return 
-                       to a 0 value) (Default 1)
-    param[in] pAltPos - An alternative key that can be used to add a positive value
-                         to the axis (Default 0)
-    param[in] pAltNeg - An alternative key that can be used to add a negative value
-                         to the axis (Default 0)
-
-    Example:
-
-    //Create a horizontal movement axis
-    var axis = new InputAxis("horizontal", Keys.D, Keys.A, 2, 0.5, Keys.RIGHT, Keys.LEFT);
+    param[in] pSetup - An object with values used to setup the panel
 */
-function InputAxis(pName, pPos, pNeg, pStr, pGrav, pAltPos, pAltNeg) {
-    //Store the name of the axis that this object effects
-    this.name = (typeof pName === "string" ? pName : "UNNAMED");
+function InputAxis(pSetup) {
+	//Ensure that pSetup is an object
+	pSetup = Validate.type(pSetup, "object", null, true);
 
-    //Store key values that effect the axis value
-    this.positiveKey = (typeof pPos === "number" ? pPos : 0);
-    this.negativeKey = (typeof pNeg === "number" ? pNeg : 0);
+	/*  WARNING:
+        Don't modify this internal object from the outside of the InputAxis object.
+        Instead use InputAxis object properties and functions to modify these values
+        as this allows for the internal information to update itself and keep it
+        correct.
+    */
+	this.__Internal__Dont__Modify__ = {
+    	//Store the name of the axis that this object effects
+    	name: Validate.type(pSetup["name"], "string", "", true),
 
-    //Store the alternative key values
-    this.altPositiveKey = (typeof pAltPos === "number" ? pAltPos : 0);
-    this.altNegativeKey = (typeof pAltNeg === "number" ? pAltNeg : 0);
+    	//Store key values that effect the axis value
+    	positiveKey: Validate.type(pSetup["positiveKey"], "number", 0),
+    	negativeKey: Validate.type(pSetup["negativeKey"], "number", 0),
 
-    //Store the strength of the input axis 
-    this.strength = (typeof pStr === "number" ? pStr : 1);
+    	//Store the alternative key values
+    	altPositiveKey: Validate.type(pSetup["altPositiveKey"], "number", 0),
+    	altNegativeKey: Validate.type(pSetup["altNegativeKey"], "number", 0),
 
-    //Store the gravity of the input axis
-    this.gravity = (typeof pGrav === "number" ? pGrav : 1);
+    	//Store the strength of the input axis 
+    	strength: Validate.type(pSetup["strength"], "number", 0),
+
+    	//Store the gravity of the input axis
+    	gravity: Validate.type(pSetup["gravity"], "number", 0),
+	};
 };
+
+ExtendProperties(InputAxis, {
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////                                                                                                            ////
+	/////                                               Property Definitions                                         ////
+	/////                                                                                                            ////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/*
+		InputAxis : name - Get the name of the specified virtual axis
+		06/07/2017
+
+		return string - Returns the name as a string
+	*/
+	get name() {
+		return this.__Internal__Dont__Modify__.name;
+	},
+
+	/*
+		InputAxis : positiveKey - Get the key being used as positive input
+		06/07/2017
+
+		return number - Returns the key as an integral number defined in the Keys and Buttons objects
+	*/
+	get positiveKey() {
+		return this.__Internal__Dont__Modify__.positiveKey;
+	},
+
+	/*
+		InputAxis : positiveKey - Set the key being used as positive input
+		06/07/2017
+
+		param[in] pKey - An integral number storing a value defined in the Keys and Buttons objects
+	*/
+	set positiveKey(pKey) {
+		this.__Internal__Dont__Modify__.positiveKey = Math.abs(Math.round(Validate.type(pKey, "number", 0, true)));
+	},
+
+	/*
+		InputAxis : negativeKey - Get the key being used as negative input
+		06/07/2017
+
+		return number - Returns the key as an integral number defined in the Keys and Buttons objects
+	*/
+	get negativeKey() {
+		return this.__Internal__Dont__Modify__.negativeKey;
+	},
+
+	/*
+		InputAxis : negativeKey - Set the key being used as negative input
+		06/07/2017
+
+		param[in] pKey - An integral number storing a value defined in the Keys and Buttons objects
+	*/
+	set negativeKey(pKey) {
+		this.__Internal__Dont__Modify__.negativeKey = Math.abs(Math.round(Validate.type(pKey, "number", 0, true)));
+	},
+
+	/*
+		InputAxis : altPositiveKey - Get the alternate key being used as positive input
+		06/07/2017
+
+		return number - Returns the key as an integral number defined in the Keys and Buttons objects
+	*/
+	get altPositiveKey() {
+		return this.__Internal__Dont__Modify__.altPositiveKey;
+	},
+
+	/*
+		InputAxis : altPositiveKey - Set the alternate key being used as positive input
+		06/07/2017
+
+		param[in] pKey - An integral number storing a value defined in the Keys and Buttons objects
+	*/
+	set altPositiveKey(pKey) {
+		this.__Internal__Dont__Modify__.altPositiveKey = Math.abs(Math.round(Validate.type(pKey, "number", 0, true)));
+	},
+
+	/*
+		InputAxis : altNegativeKey - Get the alternate key being used as negative input
+		06/07/2017
+
+		return number - Returns the key as an integral number defined in the Keys and Buttons objects
+	*/
+	get altNegativeKey() {
+		return this.__Internal__Dont__Modify__.altNegativeKey;
+	},
+
+	/*
+		InputAxis : altNegativeKey - Set the alternate key being used as negative input
+		06/07/2017
+
+		param[in] pKey - An integral number storing a value defined in the Keys and Buttons objects
+	*/
+	set altNegativeKey(pKey) {
+		this.__Internal__Dont__Modify__.altNegativeKey = Math.abs(Math.round(Validate.type(pKey, "number", 0, true)));
+	},
+
+	/*
+		InputAxis : strength - Get the strength value of the Virtual Axis
+		06/07/2017
+
+		return number - Returns the strength as a positive number
+	*/
+	get strength() {
+		return this.__Internal__Dont__Modify__.strength;
+	},
+
+	/*
+		InputAxis : strength - Set the strength value of the Virtual Axis
+		06/07/2017
+
+		param[in] pVal - A number value containing the new strength
+	*/
+	set strength(pVal) {
+		this.__Internal__Dont__Modify__.strength = Math.abs(Validate.type(pVal, "number", 0, true));
+	},
+
+	/*
+		InputAxis : gravity - Get the gravity value of the Virtual Axis
+		06/07/2017
+
+		return number - Returns the gravity as a positive number
+	*/
+	get gravity() {
+		return this.__Internal__Dont__Modify__.gravity;
+	},
+
+	/*
+		InputAxis : gravity - Set the gravity value of the Virtual Axis
+		06/07/2017
+
+		param[in] pVal - A number value containing the new gravity
+	*/
+	set gravity(pVal) {
+		this.__Internal__Dont__Modify__.gravity = Math.abs(Validate.type(pVal, "number", 0, true));
+	},
+});
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////                                                                                                            ////
@@ -609,7 +649,7 @@ function InputAxis(pName, pPos, pNeg, pStr, pGrav, pAltPos, pAltNeg) {
  *      Key codes taken from http://www.cambiaresearch.com/articles/15/javascript-key-codes
  **/
 
-var Keys = {
+let Keys = {
     //NUMBERS
     NUM0: 48,
     NUM1: 49,
@@ -735,4 +775,4 @@ var Keys = {
  *      should not be altered.
  **/
 
-var Buttons = { LEFT_CLICK: 1, MIDDLE_CLICK: 2, RIGHT_CLICK: 3 };
+let Buttons = { LEFT_CLICK: 1, MIDDLE_CLICK: 2, RIGHT_CLICK: 3 };

@@ -21,8 +21,8 @@ graphics.setWindowResizeCallback(function(pWidth, pHeight) {
 });
 
 /*--------------------Input--------------------*/
-//Set the canvas within the Input Manager
-Input.setCanvas(graphics.canvas);
+//Create the Input Manager
+let input = new Input(graphics.canvas);
 
 /*--------------------Rendering--------------------*/
 //Create the camera to view the environment
@@ -61,17 +61,17 @@ let emit = particleManager.createEmitter({
 */
 function updateLoop(pDelta) {
 	//Update the input manager
-	Input.update(pDelta);
+	input.update(pDelta);
 
 	emit.position = new Vec2(-Constants.WORLD_VIEW_WIDTH / 2 + Constants.WORLD_VIEW_WIDTH * Math.sinT(), 0);
 
 	//Check for mouse click
-	if (Input.mouseDown(Buttons.LEFT_CLICK) && (Date.now() * 0.001) >= (lastEmitter + (1 / emittersPerSecond))) {
+	if (input.inputDown(Buttons.LEFT_CLICK) && (Date.now() * 0.001) >= (lastEmitter + (1 / emittersPerSecond))) {
 		//Save the current time
 		lastEmitter = Date.now() * 0.001;
 
 		//Get the position
-		let pos = camera.screenPosToWorld(Input.mousePos);
+		let pos = camera.screenPosToWorld(input.mousePos);
 
 		//Create an emitter
 		particleManager.createEmitter({
