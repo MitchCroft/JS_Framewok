@@ -24,6 +24,17 @@ graphics.setWindowResizeCallback(function(pWidth, pHeight) {
 //Create the Input Manager
 let input = new Input(graphics.canvas);
 
+//Create a virtual axis for scaling time
+let SCALE_AXIS = new InputAxis({
+	name: "scale",
+	positiveKey: Keys.RIGHT,
+	negativeKey: Keys.LEFT,
+	gravity: 0
+});
+
+//Add the axis to the input manager
+input.addAxis(SCALE_AXIS);
+
 /*--------------------Rendering--------------------*/
 //Create the camera to view the environment
 let camera = new Camera(graphics.canvas, Constants.WORLD_VIEW_WIDTH, Constants.WORLD_VIEW_HEIGHT);
@@ -44,8 +55,8 @@ graphics.addCanvasResizeEvent(function(pWidth, pHeight) {
 let particleManager = new ParticleManager();
 
 //Store paintbrush settings
-let emittersPerSecond = 5;
-let lastEmitter = Date.now() * 0.001;
+let emittersPerSecond = 1 / 5;
+let nextEmitterTime = 0;
 
 let emit = particleManager.createEmitter({
 	maximum: 200,
@@ -57,18 +68,22 @@ let emit = particleManager.createEmitter({
 	updateLoop - Update the input and display the world environment
 	19/05/2017
 
-	param[in] pDelta - The delta time for the current cycle
+	param[in] pTime - A time object containing the time information for the cycle
 */
-function updateLoop(pDelta) {
+function updateLoop(pTime) {
 	//Update the input manager
-	input.update(pDelta);
+	input.update(pTime.realDeltaTime);
 
-	emit.position = new Vec2(-Constants.WORLD_VIEW_WIDTH / 2 + Constants.WORLD_VIEW_WIDTH * Math.sinT(), 0);
+	//Scale the time object
+	pTime.timeScale = (input.getAxis("scale") + 1) / 2 * 2;
+
+	//Move the local space emitter
+	emit.position = new Vec2(Constants.WORLD_VIEW_WIDTH / 2 + Constants.WORLD_VIEW_WIDTH * Math.sin(pTime.elapsedTime), 0);
 
 	//Check for mouse click
-	if (input.inputDown(Buttons.LEFT_CLICK) && (Date.now() * 0.001) >= (lastEmitter + (1 / emittersPerSecond))) {
-		//Save the current time
-		lastEmitter = Date.now() * 0.001;
+	if (input.inputDown(Buttons.LEFT_CLICK) && pTime.realElapsedTime >= nextEmitterTime) {
+		//Save the time of next emitter
+		nextEmitterTime = pTime.realElapsedTime + emittersPerSecond;
 
 		//Get the position
 		let pos = camera.screenPosToWorld(input.mousePos);
@@ -96,10 +111,10 @@ function updateLoop(pDelta) {
 	}
 
 	//Update the particle manager
-	particleManager.update(pDelta);
+	particleManager.update(pTime.deltaTime);
 
 	//Pan the camera out as emitters are added
-	camera.distance = Math.lerp(camera.distance, Math.log(particleManager.count + 2), pDelta);
+	camera.distance = Math.lerp(camera.distance, Math.log(particleManager.count + 2), pTime.deltaTime);
 
 	//Clear the background
 	graphics.transform = null;
@@ -118,11 +133,16 @@ function updateLoop(pDelta) {
 	//Set the UI transform
 	graphics.transform = camera.projectionUI;
 
-	//Display the Emitter count
+	//Display Stat Information
 	graphics.draw.font = "36px Arial";
 	graphics.outlineText("Emitters: " + particleManager.count, Constants.WORLD_VIEW_WIDTH, 40, "white", "black", TextAlign.RIGHT);
-	graphics.outlineText("FPS: " + (1 / pDelta).toFixed(0), 10, 40, "red");
+	graphics.outlineText("FPS: " + (1 / pTime.realDeltaTime).toFixed(0), 10, 40, "red");
+
+	//Display Time Scale Information
+	graphics.outlineText("Time Scale: " + pTime.timeScale.toFixed(2), Constants.WORLD_VIEW_WIDTH / 2, 40, "green", "black", TextAlign.CENTER);
+	graphics.draw.font = "16px Arial";
+	graphics.outlineText("Use LEFT and RIGHT to Scale Time", Constants.WORLD_VIEW_WIDTH / 2, 60, "white", "black", TextAlign.CENTER);
 }
 
 //Assign the game loop to the state manager
-StateManager.setGameFunction(updateLoop);
+let stateManager = new StateManager(updateLoop);
